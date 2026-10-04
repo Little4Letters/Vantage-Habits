@@ -140,6 +140,14 @@ function HabitTabs() {
     );
   };
   const addHabit = (habit) => setHabits((current) => [...current, habit]);
+  const updateHabit = (updatedHabit) =>
+    setHabits((current) =>
+      current.map((habit) =>
+        habit.id === updatedHabit.id ? updatedHabit : habit,
+      ),
+    );
+  const deleteHabit = (habitId) =>
+    setHabits((current) => current.filter((habit) => habit.id !== habitId));
 
   return (
     <Tab.Navigator
@@ -158,7 +166,15 @@ function HabitTabs() {
         {(props) => <ProgressScreen {...props} habits={habits} />}
       </Tab.Screen>
       <Tab.Screen name="Add">
-        {(props) => <AddHabitScrn {...props} onAddHabit={addHabit} />}
+        {(props) => (
+          <AddHabitScrn
+            {...props}
+            habits={habits}
+            onAddHabit={addHabit}
+            onUpdateHabit={updateHabit}
+            onDeleteHabit={deleteHabit}
+          />
+        )}
       </Tab.Screen>
       <Tab.Screen name="Alerts" component={AlertsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
