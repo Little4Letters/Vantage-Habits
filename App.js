@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Pressable,
   StyleSheet,
   View,
   TouchableOpacity,
@@ -17,12 +16,12 @@ import { StatusBar } from "expo-status-bar";
 
 import {
   useFonts,
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-  Poppins_800ExtraBold,
-} from "@expo-google-fonts/poppins";
+  NunitoSans_400Regular,
+  NunitoSans_500Medium,
+  NunitoSans_600SemiBold,
+  NunitoSans_700Bold,
+  NunitoSans_800ExtraBold,
+} from "@expo-google-fonts/nunito-sans";
 
 import HomeScreen from "./src/screens/HomeScreen.js";
 import AddHabitScrn from "./src/screens/AddHabitScrn.js";
@@ -184,11 +183,11 @@ function HabitTabs() {
 
 export default function App() {
   let [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
-    Poppins_800ExtraBold,
+    NunitoSans_400Regular,
+    NunitoSans_500Medium,
+    NunitoSans_600SemiBold,
+    NunitoSans_700Bold,
+    NunitoSans_800ExtraBold,
   });
 
   // ADDED: Show a loading screen until the fonts are ready

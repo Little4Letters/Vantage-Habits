@@ -1,6 +1,6 @@
-import { View, Pressable, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { PoppinsText as Text } from "./Typography.js";
+import { AppText as Text } from "./Typography.js";
 
 export default function HabitCard({
   title,
@@ -43,7 +43,7 @@ export default function HabitCard({
           </Text>
         </View>
       </View>
-      <Pressable
+      <TouchableOpacity
         accessibilityRole="checkbox"
         accessibilityLabel={`${isCompleted ? "Mark" : "Complete"} ${title}`}
         accessibilityState={{ checked: isCompleted }}
@@ -51,7 +51,7 @@ export default function HabitCard({
         style={[styles.checkCircle, isCompleted && styles.checkCircleCompleted]}
       >
         {isCompleted && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
-      </Pressable>
+      </TouchableOpacity>
     </View>
   );
 }

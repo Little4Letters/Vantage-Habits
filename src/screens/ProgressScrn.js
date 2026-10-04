@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { TouchableOpacity, ScrollView, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PoppinsText as Text } from "../components/Typography.js";
@@ -17,7 +17,7 @@ export default function ProgressScreen({ habits }) {
 
   // 1. SafeAreaView is used to ensure that the content is displayed within the safe area boundaries of the device
   // 2. Avoiding notches and other screen obstructions. The ScrollView allows for vertical scrolling of the content,
-  // 3. Making it accessible on smaller screens. The Pressable components are used for interactive elements and,
+  // 3. Making it accessible on smaller screens. The TouchableOpacity components are used for interactive elements and,
   // 4. Allowing users to select different time periods for viewing their progress.
 
   return (
@@ -31,7 +31,7 @@ export default function ProgressScreen({ habits }) {
 
         <View style={styles.segment}>
           {periods.map((option) => (
-            <Pressable
+            <TouchableOpacity
               key={option}
               onPress={() => setPeriod(option)}
               style={[
@@ -47,7 +47,7 @@ export default function ProgressScreen({ habits }) {
               >
                 {option}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           ))}
         </View>
 

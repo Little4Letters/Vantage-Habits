@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, ScrollView } from "react-native";
+import { View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HabitSec from "../components/HabitsSec.js";
@@ -59,14 +59,14 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
             <View style={styles.brandMark}>
               <Ionicons name="checkmark-done" size={23} color="#E56B78" />
             </View>
-            <Pressable
+            <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Show current month"
               onPress={() => setShowMonth((visible) => !visible)}
               style={styles.calendarButton}
             >
               <Ionicons name="calendar-outline" size={20} color="#3E4049" />
-            </Pressable>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -81,7 +81,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
 
         <View style={styles.dateStrip}>
           {dates.map((date, index) => (
-            <Pressable
+            <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel={`${date.day}, ${date.number}`}
               accessibilityState={
@@ -110,18 +110,18 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
               >
                 {date.number}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Upcoming Habits</Text>
-          <Pressable
+          <TouchableOpacity
             onPress={() => navigation.navigate("Add")}
             accessibilityRole="button"
           >
             <Text style={styles.manageText}>Add new</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
         {upcomingHabits.length ? (

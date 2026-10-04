@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { PoppinsText as Text } from "./Typography.js";
+import { AppText as Text } from "./Typography.js";
 
 export default function HabitPresetCard({
   title,
@@ -11,7 +11,7 @@ export default function HabitPresetCard({
   onPress,
 }) {
   return (
-    <Pressable
+    <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={`Select ${title} habit`}
       accessibilityState={selected ? { selected: true } : {}}
@@ -38,7 +38,7 @@ export default function HabitPresetCard({
           <Ionicons name="checkmark" size={13} color={color} />
         </View>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
+  TouchableOpacity,
   ScrollView,
   StyleSheet,
   View,
@@ -207,16 +207,16 @@ export default function AddHabitScrn({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.topBar}>
-            <Pressable
+            <TouchableOpacity
               accessibilityRole="button"
               onPress={() => navigation.navigate("Home")}
               style={styles.backButton}
             >
               <Ionicons name="chevron-back" size={18} color="#30313A" />
               <Text style={styles.backText}>Go Back</Text>
-            </Pressable>
+            </TouchableOpacity>
             {mode === "create" ? (
-              <Pressable
+              <TouchableOpacity
                 accessibilityRole="button"
                 onPress={saveHabit}
                 style={styles.topAction}
@@ -224,9 +224,9 @@ export default function AddHabitScrn({
                 <Text style={styles.topActionText}>
                   {editingId ? "Update" : "Create"}
                 </Text>
-              </Pressable>
+              </TouchableOpacity>
             ) : (
-              <Pressable
+              <TouchableOpacity
                 accessibilityRole="button"
                 onPress={() => {
                   resetForm();
@@ -236,7 +236,7 @@ export default function AddHabitScrn({
               >
                 <Ionicons name="add" size={17} color="#FFFFFF" />
                 <Text style={styles.topActionText}>Add Habit</Text>
-              </Pressable>
+              </TouchableOpacity>
             )}
           </View>
 
@@ -258,7 +258,7 @@ export default function AddHabitScrn({
                   : "Update and delete your habits"}
               </Text>
             </View>
-            <Pressable
+            <TouchableOpacity
               accessibilityRole="button"
               onPress={() => {
                 if (mode === "manage") resetForm();
@@ -269,7 +269,7 @@ export default function AddHabitScrn({
               <Text style={styles.modeButtonText}>
                 {mode === "create" ? "Manage" : "Create"}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           </View>
 
           {mode === "create" ? (
@@ -311,7 +311,7 @@ export default function AddHabitScrn({
 
                 <View style={styles.colorRow}>
                   {colors.map((option) => (
-                    <Pressable
+                    <TouchableOpacity
                       key={option}
                       accessibilityRole="button"
                       accessibilityLabel={`Choose card color ${option}`}
@@ -328,7 +328,7 @@ export default function AddHabitScrn({
                       {color === option && (
                         <Ionicons name="checkmark" size={15} color="#FFFFFF" />
                       )}
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
               </View>
@@ -337,7 +337,7 @@ export default function AddHabitScrn({
                 <Text style={styles.sectionTitle}>Do it at</Text>
                 <View style={styles.timeGrid}>
                   {times.map((option) => (
-                    <Pressable
+                    <TouchableOpacity
                       key={option.label}
                       accessibilityRole="button"
                       accessibilityState={
@@ -362,7 +362,7 @@ export default function AddHabitScrn({
                       >
                         {option.label}
                       </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
               </View>
@@ -371,7 +371,7 @@ export default function AddHabitScrn({
                 <Text style={styles.sectionTitle}>Repeat</Text>
                 <View style={styles.frequencyRow}>
                   {frequencies.map((option) => (
-                    <Pressable
+                    <TouchableOpacity
                       key={option}
                       accessibilityRole="button"
                       accessibilityState={
@@ -391,12 +391,12 @@ export default function AddHabitScrn({
                       >
                         {option}
                       </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
                 <View style={styles.dayRow}>
                   {days.map((day) => (
-                    <Pressable
+                    <TouchableOpacity
                       key={day}
                       accessibilityRole="button"
                       accessibilityLabel={`${selectedDays.includes(day) ? "Remove" : "Add"} ${day}`}
@@ -417,7 +417,7 @@ export default function AddHabitScrn({
                       >
                         {day}
                       </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
               </View>
@@ -435,7 +435,7 @@ export default function AddHabitScrn({
                 </View>
                 <View style={styles.durationRow}>
                   {durations.map((option) => (
-                    <Pressable
+                    <TouchableOpacity
                       key={option}
                       accessibilityRole="button"
                       accessibilityState={
@@ -455,12 +455,12 @@ export default function AddHabitScrn({
                       >
                         {option}
                       </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
               </View>
 
-              <Pressable
+              <TouchableOpacity
                 accessibilityRole="button"
                 onPress={saveHabit}
                 style={styles.createButton}
@@ -469,7 +469,7 @@ export default function AddHabitScrn({
                   {editingId ? "Update habit" : "Create your own"}
                 </Text>
                 <Ionicons name="add" size={18} color="#FFFFFF" />
-              </Pressable>
+              </TouchableOpacity>
             </>
           ) : (
             <View style={styles.manageSection}>
@@ -483,7 +483,7 @@ export default function AddHabitScrn({
                       { backgroundColor: habit.color || colors[0] },
                     ]}
                   >
-                    <Pressable
+                    <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={`Edit ${habit.title}`}
                       onPress={() => editHabit(habit)}
@@ -509,8 +509,8 @@ export default function AddHabitScrn({
                         size={18}
                         color="#FFFFFF"
                       />
-                    </Pressable>
-                    <Pressable
+                    </TouchableOpacity>
+                    <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={`Delete ${habit.title}`}
                       onPress={() => onDeleteHabit(habit.id)}
@@ -522,7 +522,7 @@ export default function AddHabitScrn({
                         color="#FFFFFF"
                       />
                       <Text style={styles.deleteText}>Delete</Text>
-                    </Pressable>
+                    </TouchableOpacity>
                   </View>
                 ))
               ) : (

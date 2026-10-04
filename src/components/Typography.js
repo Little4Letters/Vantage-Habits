@@ -5,13 +5,13 @@ import {
 } from "react-native";
 
 const fontByWeight = {
-  normal: "Poppins_400Regular",
-  400: "Poppins_400Regular",
-  500: "Poppins_500Medium",
-  600: "Poppins_600SemiBold",
-  700: "Poppins_700Bold",
-  bold: "Poppins_700Bold",
-  800: "Poppins_800ExtraBold",
+  normal: "NunitoSans_400Regular",
+  400: "NunitoSans_400Regular",
+  500: "NunitoSans_500Medium",
+  600: "NunitoSans_600SemiBold",
+  700: "NunitoSans_700Bold",
+  bold: "NunitoSans_700Bold",
+  800: "NunitoSans_800ExtraBold",
 };
 
 function resolveTextStyle(style) {
@@ -27,10 +27,10 @@ function resolveTextStyle(style) {
   };
 }
 
-export function PoppinsText({ style, ...props }) {
+export function AppText({ style, ...props }) {
   return <NativeText {...props} style={resolveTextStyle(style)} />;
 }
 
-export function PoppinsTextInput({ style, ...props }) {
+export function AppTextInput({ style, ...props }) {
   return <NativeTextInput {...props} style={resolveTextStyle(style)} />;
 }
