@@ -28,6 +28,7 @@ import AddHabitScrn from "./src/screens/AddHabitScrn.js";
 import ProgressScreen from "./src/screens/ProgressScrn.js";
 import AlertsScreen from "./src/screens/NotificationScrn.js";
 import ProfileScreen from "./src/screens/ProfileScrn.js";
+import { palette as theme } from "./src/theme.js";
 
 const Tab = createBottomTabNavigator();
 
@@ -84,7 +85,11 @@ function CustomTabBar({ state, navigation }) {
           const focused = state.index === index;
           const [inactiveIcon, activeIcon] = tabIcons[route.name];
           const isAdd = route.name === "Add";
-          const iconColor = isAdd ? "#FFFFFF" : focused ? "#22232D" : "#A1A1AD";
+          const iconColor = isAdd
+            ? theme.white
+            : focused
+              ? theme.tertiary[900]
+              : "#A1A1AD";
 
           return (
             <TouchableOpacity
@@ -153,7 +158,7 @@ function HabitTabs() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        sceneStyle: { backgroundColor: "#F7F7F8" },
+        sceneStyle: { backgroundColor: theme.natural[50] },
       }}
     >
       <Tab.Screen name="Home">
@@ -194,7 +199,7 @@ export default function App() {
   if (!fontsLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#F05E79" />
+        <ActivityIndicator size="large" color={theme.primary[600]} />
       </View>
     );
   }
@@ -214,7 +219,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F7F7F8",
+    backgroundColor: theme.natural[50],
   },
   tabDockPosition: {
     position: "absolute",
@@ -230,7 +235,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    backgroundColor: "#20212D",
+    backgroundColor: theme.tertiary[900],
     borderRadius: 36,
   },
   tabButton: {
@@ -246,7 +251,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabIconSelected: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.white,
     borderRadius: 14,
   },
   addTabButton: {
@@ -254,8 +259,8 @@ const styles = StyleSheet.create({
     height: 54,
     marginTop: -18,
     borderRadius: 27,
-    backgroundColor: "#F45F78",
+    backgroundColor: theme.primary[600],
     borderWidth: 5,
-    borderColor: "#20212D",
+    borderColor: theme.tertiary[900],
   },
 });

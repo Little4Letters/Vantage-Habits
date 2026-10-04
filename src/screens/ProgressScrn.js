@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { TouchableOpacity, ScrollView, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PoppinsText as Text } from "../components/Typography.js";
+import { AppText as Text } from "../components/Typography.js";
+import { palette as theme } from "../theme.js";
 
 const periods = ["Today", "This Week", "This Month"];
 
@@ -17,7 +18,7 @@ export default function ProgressScreen({ habits }) {
 
   // 1. SafeAreaView is used to ensure that the content is displayed within the safe area boundaries of the device
   // 2. Avoiding notches and other screen obstructions. The ScrollView allows for vertical scrolling of the content,
-  // 3. Making it accessible on smaller screens. The TouchableOpacity components are used for interactive elements and,
+  // 3. Making it accessible on smaller screens. TouchableOpacity components are used for interactive elements and,
   // 4. Allowing users to select different time periods for viewing their progress.
 
   return (
@@ -153,7 +154,6 @@ export default function ProgressScreen({ habits }) {
                         <Ionicons name="checkmark" size={11} color="#9660E8" />
                       )}
                     </View>
-                    <Text style={styles.dayLabel}>{day}</Text>
                   </View>
                 );
               })}
@@ -165,7 +165,7 @@ export default function ProgressScreen({ habits }) {
   );
 }
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F7F7F8" },
+  safeArea: { flex: 1, backgroundColor: theme.natural[50] },
   screenContent: { paddingTop: 18, paddingHorizontal: 21, paddingBottom: 126 },
   pageEyebrow: {
     color: "#E36F80",
@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
   scoreCopy: { gap: 10 },
   panelHeading: {
     color: "#252630",
-    fontSize: 19,
-    fontWeight: "800",
+    borderColor: theme.primary[500],
+    borderTopColor: theme.secondary[500],
     marginBottom: 2,
   },
   legendRow: { flexDirection: "row", alignItems: "center", gap: 9 },

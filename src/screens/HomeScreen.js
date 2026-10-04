@@ -3,7 +3,8 @@ import { View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HabitSec from "../components/HabitsSec.js";
-import { PoppinsText as Text } from "../components/Typography.js";
+import { AppText as Text } from "../components/Typography.js";
+import { palette as theme } from "../theme.js";
 
 function getWeekDates() {
   // This function calculates the dates for the current week starting from Monday.
@@ -28,6 +29,20 @@ function getWeekDates() {
   });
 }
 
+function getMonthDates(monthDate) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const leadingDays = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  return [
+    ...Array(leadingDays).fill(null),
+    ...Array.from(
+      { length: daysInMonth },
+      (_, index) => new Date(year, month, index + 1),
+    ),
+  ];
+}
+
 export default function HomeScreen({ navigation, habits, onToggleHabit }) {
   // This function is used to get the dates of the current week starting from Monday.
   // It creates an array of 7 objects only para ma follow as a week concept
@@ -35,8 +50,10 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
   // Each representing a day of the week with its corresponding date and day name.
   const dates = getWeekDates();
   const todayIndex = (new Date().getDay() + 6) % 7;
-  const [selectedDate, setSelectedDate] = useState(todayIndex);
+  const [selectedDate, setSelectedDate] = useState(dates[todayIndex].key);
   const [showMonth, setShowMonth] = useState(false);
+  const [visibleMonth, setVisibleMonth] = useState(() => new Date());
+  const monthDates = getMonthDates(visibleMonth);
   const upcomingHabits = habits.filter((habit) => !habit.completed);
   const completedHabits = habits.filter((habit) => habit.completed);
 
@@ -52,7 +69,12 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
               Good <Text style={styles.greetingHighlight}>Afternoon</Text>
             </Text>
             <Text style={styles.weather}>
-              <Ionicons name="partly-sunny" size={15} color="#F1B84B" /> 32 °C
+              <Ionicons
+                name="partly-sunny"
+                size={15}
+                color={theme.secondary[500]}
+              />{" "}
+              32 °C
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -61,7 +83,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
             </View>
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Show current month"
+              accessibilityLabel="Toggle full calendar"
               onPress={() => setShowMonth((visible) => !visible)}
               style={styles.calendarButton}
             >
@@ -71,12 +93,96 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
         </View>
 
         {showMonth && (
-          <Text style={styles.monthLabel}>
-            {new Date().toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </Text>
+          <View style={styles.calendarPanel}>
+            <View style={styles.calendarHeading}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Previous month"
+                onPress={() =>
+                  setVisibleMonth(
+                    new Date(
+                      visibleMonth.getFullYear(),
+                      visibleMonth.getMonth() - 1,
+                      1,
+                    ),
+                  )
+                }
+                style={styles.monthArrow}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={17}
+                  color={theme.tertiary[800]}
+                />
+              </TouchableOpacity>
+              <Text style={styles.monthTitle}>
+                {visibleMonth.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Text>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Next month"
+                onPress={() =>
+                  setVisibleMonth(
+                    new Date(
+                      visibleMonth.getFullYear(),
+                      visibleMonth.getMonth() + 1,
+                      1,
+                    ),
+                  )
+                }
+                style={styles.monthArrow}
+              >
+                <Ionicons
+                  name="chevron-forward"
+                  size={17}
+                  color={theme.tertiary[800]}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.monthGrid}>
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                <Text key={day} style={styles.monthWeekday}>
+                  {day}
+                </Text>
+              ))}
+              {monthDates.map((date, index) => {
+                if (!date)
+                  return (
+                    <View key={`blank-${index}`} style={styles.monthBlank} />
+                  );
+                const dateKey = date.toISOString();
+                const selected = selectedDate === dateKey;
+                return (
+                  <TouchableOpacity
+                    key={dateKey}
+                    accessibilityRole="button"
+                    accessibilityLabel={date.toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                    })}
+                    accessibilityState={selected ? { selected: true } : {}}
+                    onPress={() => setSelectedDate(dateKey)}
+                    style={[
+                      styles.monthDay,
+                      selected && styles.monthDaySelected,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.monthDayText,
+                        selected && styles.textWhite,
+                      ]}
+                    >
+                      {date.getDate()}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
         )}
 
         <View style={styles.dateStrip}>
@@ -85,19 +191,19 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
               accessibilityRole="button"
               accessibilityLabel={`${date.day}, ${date.number}`}
               accessibilityState={
-                selectedDate === index ? { selected: true } : {}
+                selectedDate === date.key ? { selected: true } : {}
               }
               key={date.key}
               onPress={() => setSelectedDate(index)}
               style={[
                 styles.dateCard,
-                selectedDate === index && styles.dateCardActive,
+                selectedDate === date.key && styles.dateCardActive,
               ]}
             >
               <Text
                 style={[
                   styles.dayText,
-                  selectedDate === index && styles.textWhite,
+                  selectedDate === date.key && styles.textWhite,
                 ]}
               >
                 {date.day}
@@ -105,7 +211,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
               <Text
                 style={[
                   styles.dateNum,
-                  selectedDate === index && styles.textWhite,
+                  selectedDate === date.key && styles.textWhite,
                 ]}
               >
                 {date.number}
@@ -158,7 +264,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F7F7F8" },
+  safeArea: { flex: 1, backgroundColor: theme.natural[50] },
   container: {
     paddingTop: 12,
     paddingHorizontal: 20,
@@ -170,9 +276,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 25,
   },
-  greeting: { fontSize: 22, fontWeight: "800", color: "#20212A" },
-  greetingHighlight: { color: "#E36F80", fontWeight: "800" },
-  weather: { fontSize: 13, color: "#85858D", marginTop: 6 },
+  greeting: { fontSize: 22, fontWeight: "800", color: theme.tertiary[900] },
+  greetingHighlight: { color: theme.primary[400], fontWeight: "800" },
+  weather: { fontSize: 13, color: theme.natural[500], marginTop: 6 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   brandMark: {
     width: 34,
@@ -185,16 +291,50 @@ const styles = StyleSheet.create({
     height: 42,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.white,
     borderRadius: 21,
     elevation: 1,
   },
-  monthLabel: {
-    color: "#85858D",
-    fontSize: 12,
-    marginTop: -17,
-    marginBottom: 12,
+  calendarPanel: {
+    backgroundColor: theme.white,
+    borderRadius: 15,
+    padding: 12,
+    marginTop: -12,
+    marginBottom: 18,
   },
+  calendarHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  monthArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tertiary[50],
+  },
+  monthTitle: { color: theme.tertiary[900], fontSize: 13, fontWeight: "700" },
+  monthGrid: { flexDirection: "row", flexWrap: "wrap" },
+  monthWeekday: {
+    width: "14.285%",
+    textAlign: "center",
+    color: theme.natural[500],
+    fontSize: 9,
+    paddingVertical: 7,
+  },
+  monthBlank: { width: "14.285%", height: 34 },
+  monthDay: {
+    width: "14.285%",
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+  },
+  monthDaySelected: { backgroundColor: theme.primary[600] },
+  monthDayText: { color: theme.tertiary[800], fontSize: 11, fontWeight: "600" },
   dateStrip: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -206,22 +346,22 @@ const styles = StyleSheet.create({
     minWidth: 38,
     alignItems: "center",
     paddingVertical: 10,
-    backgroundColor: "#EEEEF0",
+    backgroundColor: theme.natural[100],
     borderRadius: 13,
   },
-  dateCardActive: { backgroundColor: "#F05E79" },
-  dayText: { fontSize: 11, color: "#888891", marginBottom: 4 },
-  dateNum: { fontSize: 17, fontWeight: "700", color: "#292A33" },
-  textWhite: { color: "#FFFFFF" },
+  dateCardActive: { backgroundColor: theme.primary[600] },
+  dayText: { fontSize: 11, color: theme.natural[600], marginBottom: 4 },
+  dateNum: { fontSize: 17, fontWeight: "700", color: theme.tertiary[900] },
+  textWhite: { color: theme.white },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 14,
   },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: "#252630" },
-  manageText: { fontSize: 12, color: "#909099", fontWeight: "600" },
+  sectionTitle: { fontSize: 15, fontWeight: "700", color: theme.tertiary[900] },
+  manageText: { fontSize: 12, color: theme.natural[500], fontWeight: "600" },
   completedHeader: { marginTop: 14 },
-  completedCount: { color: "#9A9AA2", fontSize: 12 },
-  emptyText: { color: "#85858D", fontSize: 13, paddingVertical: 18 },
+  completedCount: { color: theme.natural[400], fontSize: 12 },
+  emptyText: { color: theme.natural[500], fontSize: 13, paddingVertical: 18 },
 });

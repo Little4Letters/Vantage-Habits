@@ -1,106 +1,187 @@
 import React, { useState } from "react";
-import {
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-} from "react-native";
+import { ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ReminderRow from "../components/ReminderSec.js";
-import { PoppinsText as Text } from "../components/Typography.js";
+import {
+  AppText as Text,
+  AppTextInput as TextInput,
+} from "../components/Typography.js";
+import { palette as theme } from "../theme.js";
 
 export default function ProfileScreen() {
-  const [weeklySummary, setWeeklySummary] = useState(true);
-  const [quietMode, setQuietMode] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("Habit Builder");
+  const [email, setEmail] = useState("habit.builder@email.com");
+  const [gender, setGender] = useState("Male");
+  const [birthDate, setBirthDate] = useState("12 / 05 / 1996");
+  const [activeAction, setActiveAction] = useState("");
+  const menuItems = [
+    { icon: "share-social-outline", title: "Share This App" },
+    { icon: "star-outline", title: "Rate Us 5 Star" },
+    { icon: "information-circle-outline", title: "About Us" },
+    { icon: "call-outline", title: "Contact Us" },
+    { icon: "document-text-outline", title: "Terms of Use" },
+    { icon: "shield-checkmark-outline", title: "Data Privacy" },
+    { icon: "lock-closed-outline", title: "Change Password" },
+    { icon: "log-out-outline", title: "Logout" },
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.screenContent}>
-        <Text style={styles.pageEyebrow}>YOUR SPACE</Text>
-        <Text style={styles.pageTitle}>Profile</Text>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={31} color="#FFFFFF" />
+      <ScrollView
+        contentContainerStyle={styles.screenContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {editing ? (
+          <View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => setEditing(false)}
+              style={styles.editHeading}
+            >
+              <View style={styles.editBack}>
+                <Ionicons
+                  name="chevron-back"
+                  size={18}
+                  color={theme.tertiary[800]}
+                />
+              </View>
+              <View style={styles.editHeadingCopy}>
+                <Text style={styles.editTitle}>Edit Account</Text>
+                <Text style={styles.editSubtitle}>
+                  Make changes on your account
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TextInput
+              accessibilityLabel="Name"
+              value={name}
+              onChangeText={setName}
+              style={styles.profileInput}
+            />
+            <TextInput
+              accessibilityLabel="Email address"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.profileInput}
+            />
+
+            <Text style={styles.fieldLabel}>What is your gender?</Text>
+            <View style={styles.genderRow}>
+              {["Male", "Female", "Other"].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  accessibilityRole="button"
+                  accessibilityState={
+                    gender === option ? { selected: true } : {}
+                  }
+                  onPress={() => setGender(option)}
+                  style={[
+                    styles.genderOption,
+                    gender === option && styles.genderSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.genderText,
+                      gender === option && styles.genderTextSelected,
+                    ]}
+                  >
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.fieldLabel}>What is your date of birth?</Text>
+            <TextInput
+              accessibilityLabel="Date of birth"
+              value={birthDate}
+              onChangeText={setBirthDate}
+              style={styles.profileInput}
+            />
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => setEditing(false)}
+              style={styles.updateButton}
+            >
+              <Text style={styles.updateButtonText}>Update</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.profileCopy}>
-            <Text style={styles.profileName}>Habit Builder</Text>
-            <Text style={styles.profileSubtitle}>Small steps, every day</Text>
-          </View>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Edit profile"
-            style={styles.editButton}
-          >
-            <Ionicons name="create-outline" size={20} color="#62636C" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.profileStats}>
-          <View style={styles.profileStat}>
-            <Text style={styles.profileStatValue}>12</Text>
-            <Text style={styles.profileStatLabel}>Day streak</Text>
-          </View>
-          <View style={styles.profileStatDivider} />
-          <View style={styles.profileStat}>
-            <Text style={styles.profileStatValue}>8</Text>
-            <Text style={styles.profileStatLabel}>Habits done</Text>
-          </View>
-          <View style={styles.profileStatDivider} />
-          <View style={styles.profileStat}>
-            <Text style={styles.profileStatValue}>4</Text>
-            <Text style={styles.profileStatLabel}>Best streak</Text>
-          </View>
-        </View>
-        <Text style={[styles.sectionTitle, styles.profileSectionTitle]}>
-          PREFERENCES
-        </Text>
-        <ReminderRow
-          icon="bar-chart-outline"
-          title="Weekly Summary"
-          detail="A recap of your progress"
-          value={weeklySummary}
-          onChange={setWeeklySummary}
-        />
-        <ReminderRow
-          icon="moon-outline"
-          title="Quiet Mode"
-          detail="Reduce reminder notifications"
-          value={quietMode}
-          onChange={setQuietMode}
-        />
-        <TouchableOpacity
-          accessibilityRole="button"
-          onPress={() => {}}
-          style={styles.profileLink}
-        >
-          <View style={styles.reminderIcon}>
-            <Ionicons name="help-circle-outline" size={20} color="#656670" />
-          </View>
-          <Text style={styles.profileLinkText}>Help and support</Text>
-          <Ionicons name="chevron-forward" size={17} color="#96969E" />
-        </TouchableOpacity>
-        <Text style={styles.localNote}>
-          This profile is a visual preview. Your information stays on this
-          screen.
-        </Text>
+        ) : (
+          <>
+            <View style={styles.profileBanner}>
+              <View style={styles.profileBannerTop}>
+                <View style={styles.profileCopy}>
+                  <Text style={styles.profileName}>{name}</Text>
+                  <Text style={styles.profileSubtitle}>{email}</Text>
+                </View>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Edit account"
+                  onPress={() => setEditing(true)}
+                  style={styles.editButton}
+                >
+                  <Ionicons
+                    name="create-outline"
+                    size={19}
+                    color={theme.white}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.profileAvatar}>
+                <Ionicons name="person" size={22} color={theme.primary[600]} />
+              </View>
+            </View>
+
+            <View style={styles.menuList}>
+              {menuItems.map((item) => (
+                <TouchableOpacity
+                  key={item.title}
+                  accessibilityRole="button"
+                  onPress={() => setActiveAction(item.title)}
+                  style={styles.menuItem}
+                >
+                  <View style={styles.menuIcon}>
+                    <Ionicons name={item.icon} size={16} color={theme.white} />
+                  </View>
+                  <Text style={styles.menuTitle}>{item.title}</Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={15}
+                    color={theme.natural[500]}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            {activeAction ? (
+              <Text style={styles.actionNote}>
+                {activeAction} is a frontend preview action.
+              </Text>
+            ) : null}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F7F7F8" },
-  screenContent: { paddingTop: 18, paddingHorizontal: 21, paddingBottom: 126 },
+  safeArea: { flex: 1, backgroundColor: theme.natural[50] },
+  screenContent: { paddingTop: 16, paddingHorizontal: 17, paddingBottom: 126 },
   pageEyebrow: {
-    color: "#E36F80",
+    color: theme.primary[400],
     fontSize: 10,
     fontWeight: "800",
     letterSpacing: 1.1,
     marginBottom: 7,
   },
   pageTitle: {
-    color: "#252630",
+    color: theme.tertiary[900],
     fontSize: 29,
     fontWeight: "800",
     marginBottom: 23,
@@ -128,13 +209,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   profileCopy: { flex: 1, marginLeft: 13 },
-  profileName: { color: "#292A34", fontSize: 16, fontWeight: "800" },
-  profileSubtitle: { color: "#85858D", fontSize: 12, marginTop: 5 },
+  profileName: { color: theme.white, fontSize: 16, fontWeight: "800" },
+  profileSubtitle: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 10,
+    marginTop: 4,
+  },
   editButton: {
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: "#F1F1F3",
+    backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -174,4 +259,114 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   localNote: { color: "#9A9AA2", fontSize: 11, lineHeight: 16, marginTop: 21 },
+  profileBanner: {
+    minHeight: 131,
+    justifyContent: "space-between",
+    backgroundColor: theme.primary[400],
+    borderRadius: 16,
+    padding: 15,
+    marginBottom: 15,
+  },
+  profileBannerTop: { flexDirection: "row", alignItems: "center" },
+  profileAvatar: {
+    position: "absolute",
+    bottom: 14,
+    right: 17,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.white,
+  },
+  menuList: {
+    paddingHorizontal: 10,
+    backgroundColor: theme.white,
+    borderRadius: 14,
+  },
+  menuItem: {
+    minHeight: 49,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.tertiary[50],
+  },
+  menuIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tertiary[900],
+  },
+  menuTitle: {
+    flex: 1,
+    color: theme.tertiary[800],
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  actionNote: {
+    color: theme.natural[500],
+    fontSize: 10,
+    marginTop: 12,
+    textAlign: "center",
+  },
+  editHeading: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 18,
+  },
+  editBack: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tertiary[50],
+  },
+  editHeadingCopy: { flex: 1 },
+  editTitle: { color: theme.tertiary[900], fontSize: 15, fontWeight: "800" },
+  editSubtitle: { color: theme.natural[400], fontSize: 9, marginTop: 2 },
+  profileInput: {
+    minHeight: 46,
+    paddingHorizontal: 12,
+    backgroundColor: theme.white,
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: theme.tertiary[100],
+    color: theme.tertiary[900],
+    fontSize: 11,
+    marginBottom: 11,
+  },
+  fieldLabel: {
+    color: theme.tertiary[800],
+    fontSize: 11,
+    fontWeight: "700",
+    marginTop: 12,
+    marginBottom: 9,
+  },
+  genderRow: { flexDirection: "row", gap: 8 },
+  genderOption: {
+    flex: 1,
+    minHeight: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tertiary[50],
+    borderRadius: 11,
+  },
+  genderSelected: { backgroundColor: theme.tertiary[900] },
+  genderText: { color: theme.natural[500], fontSize: 10, fontWeight: "600" },
+  genderTextSelected: { color: theme.white },
+  updateButton: {
+    minHeight: 45,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tertiary[900],
+    borderRadius: 23,
+    marginTop: 22,
+  },
+  updateButtonText: { color: theme.white, fontSize: 11, fontWeight: "700" },
 });

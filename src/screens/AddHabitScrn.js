@@ -10,18 +10,19 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  PoppinsText as Text,
-  PoppinsTextInput as TextInput,
+  AppText as Text,
+  AppTextInput as TextInput,
 } from "../components/Typography.js";
 import HabitPresetCard from "../components/HabitPresetCard.js";
+import { palette as theme } from "../theme.js";
 
 const colors = [
+  theme.primary[600],
+  theme.primary[400],
+  theme.secondary[500],
+  theme.tertiary[500],
   "#4388F5",
-  "#F05E79",
-  "#9660E8",
-  "#F58D60",
   "#47B9A7",
-  "#F2B84B",
 ];
 const frequencies = ["One Time", "Daily", "Monthly"];
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -542,7 +543,7 @@ export default function AddHabitScrn({
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#FAF8F8" },
+  safeArea: { flex: 1, backgroundColor: theme.natural[50] },
   keyboardView: { flex: 1 },
   container: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 130 },
   topBar: {
@@ -557,10 +558,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 12,
-    backgroundColor: "#EAE9E9",
+    backgroundColor: theme.natural[100],
     borderRadius: 22,
   },
-  backText: { color: "#363740", fontSize: 11, fontWeight: "600" },
+  backText: { color: theme.tertiary[900], fontSize: 11, fontWeight: "600" },
   topAction: {
     minHeight: 40,
     minWidth: 72,
@@ -569,7 +570,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 4,
     paddingHorizontal: 15,
-    backgroundColor: "#22232D",
+    backgroundColor: theme.tertiary[900],
     borderRadius: 22,
   },
   topActionText: { color: "#FFFFFF", fontSize: 11, fontWeight: "600" },
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.white,
     borderRadius: 15,
     marginBottom: 16,
     elevation: 1,
@@ -590,19 +591,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 17,
-    backgroundColor: "#F2F2F3",
+    backgroundColor: theme.tertiary[50],
     marginRight: 10,
   },
   headingCopy: { flex: 1, minWidth: 0 },
-  headingTitle: { color: "#2B2C35", fontSize: 15, fontWeight: "700" },
-  headingSubtitle: { color: "#96969E", fontSize: 9, marginTop: 2 },
+  headingTitle: { color: theme.tertiary[900], fontSize: 15, fontWeight: "700" },
+  headingSubtitle: { color: theme.natural[400], fontSize: 9, marginTop: 2 },
   modeButton: {
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 12,
-    backgroundColor: "#F5F3F4",
+    backgroundColor: theme.tertiary[50],
   },
-  modeButtonText: { color: "#656670", fontSize: 10, fontWeight: "600" },
+  modeButtonText: {
+    color: theme.natural[600],
+    fontSize: 10,
+    fontWeight: "600",
+  },
   presetGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -612,7 +617,7 @@ const styles = StyleSheet.create({
   },
   formPanel: {
     padding: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.white,
     borderRadius: 14,
     marginBottom: 10,
   },
@@ -623,7 +628,7 @@ const styles = StyleSheet.create({
     marginBottom: 7,
   },
   sectionTitle: {
-    color: "#353640",
+    color: theme.tertiary[800],
     fontSize: 11,
     fontWeight: "600",
     marginBottom: 8,
@@ -639,8 +644,8 @@ const styles = StyleSheet.create({
     minHeight: 40,
     paddingHorizontal: 11,
     borderRadius: 10,
-    backgroundColor: "#F1F1F2",
-    color: "#292A34",
+    backgroundColor: theme.tertiary[50],
+    color: theme.tertiary[900],
     fontSize: 12,
   },
   errorText: { color: "#D64E64", fontSize: 10, marginTop: 6 },
@@ -660,7 +665,7 @@ const styles = StyleSheet.create({
   colorSelected: {
     height: 21,
     borderWidth: 2,
-    borderColor: "#FFFFFF",
+    borderColor: theme.white,
     elevation: 2,
   },
   timeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -674,7 +679,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F1F2",
     borderRadius: 10,
   },
-  timeSelected: { backgroundColor: "#22232D" },
+  timeSelected: { backgroundColor: theme.tertiary[900] },
   timeText: { color: "#565760", fontSize: 10 },
   timeTextSelected: { color: "#FFFFFF" },
   frequencyRow: {
@@ -691,7 +696,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
   },
-  frequencySelected: { backgroundColor: "#FFFFFF", elevation: 1 },
+  frequencySelected: { backgroundColor: theme.white, elevation: 1 },
   frequencyText: { color: "#6F7079", fontSize: 9 },
   frequencyTextSelected: { color: "#2C2D36", fontWeight: "600" },
   dayRow: {
@@ -708,7 +713,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#F0F0F1",
   },
-  daySelected: { backgroundColor: "#22232D" },
+  daySelected: { backgroundColor: theme.tertiary[900] },
   dayText: { color: "#62636C", fontSize: 8 },
   dayTextSelected: { color: "#FFFFFF" },
   durationPanel: { paddingVertical: 10 },
@@ -730,7 +735,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F0F1",
     borderRadius: 8,
   },
-  durationSelected: { backgroundColor: "#22232D" },
+  durationSelected: { backgroundColor: theme.tertiary[900] },
   durationText: { color: "#62636C", fontSize: 8 },
   durationTextSelected: { color: "#FFFFFF" },
   createButton: {
@@ -740,7 +745,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     borderRadius: 22,
-    backgroundColor: "#22232D",
+    backgroundColor: theme.tertiary[900],
     marginTop: 2,
   },
   createButtonText: { color: "#FFFFFF", fontSize: 11, fontWeight: "600" },

@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppText as Text } from "./Typography.js";
+import { palette as theme } from "../theme.js";
 
 export default function HabitCard({
   title,
@@ -29,7 +30,7 @@ export default function HabitCard({
           <Ionicons
             name={icon || "sparkles-outline"}
             size={21}
-            color={isCompleted ? "#8E64D9" : color || "#4388F5"}
+            color={isCompleted ? theme.tertiary[500] : color || "#4388F5"}
           />
         </View>
         <View style={styles.copy}>
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
   },
 
   cardCompleted: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.white,
   },
 
   leftContent: {
@@ -94,11 +95,11 @@ const styles = StyleSheet.create({
 
   title: { fontSize: 14, fontWeight: "700", color: "#FFFFFF" },
 
-  titleCompleted: { color: "#252630" },
+  titleCompleted: { color: theme.tertiary[900] },
 
   frequency: { fontSize: 11, color: "rgba(255,255,255,0.82)", marginTop: 4 },
 
-  frequencyCompleted: { color: "#888891" },
+  frequencyCompleted: { color: theme.natural[500] },
 
   checkCircle: {
     width: 24,
@@ -110,8 +111,8 @@ const styles = StyleSheet.create({
   },
 
   checkCircleCompleted: {
-    backgroundColor: "#252630",
-    borderColor: "#252630",
+    backgroundColor: theme.tertiary[900],
+    borderColor: theme.tertiary[900],
     alignItems: "center",
     justifyContent: "center",
   },
