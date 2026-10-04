@@ -6,6 +6,14 @@ import HabitSec from "../components/HabitsSec.js";
 import { PoppinsText as Text } from "../components/Typography.js";
 
 function getWeekDates() {
+  // This function calculates the dates for the current week starting from Monday.
+  // It creates an array of 7 objects, each representing a day of the week with its corresponding date and day name.
+
+  // This is still a prototype diri pa na sa final implementation.
+
+  // This section is diri pa synchronized an exact format of the callender.
+  // It is still uses the current date to determine the start of the week (Monday) and then generates the dates for the entire week.
+
   const today = new Date();
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
@@ -21,6 +29,10 @@ function getWeekDates() {
 }
 
 export default function HomeScreen({ navigation, habits, onToggleHabit }) {
+  // This function is used to get the dates of the current week starting from Monday.
+  // It creates an array of 7 objects only para ma follow as a week concept
+
+  // Each representing a day of the week with its corresponding date and day name.
   const dates = getWeekDates();
   const todayIndex = (new Date().getDay() + 6) % 7;
   const [selectedDate, setSelectedDate] = useState(todayIndex);
