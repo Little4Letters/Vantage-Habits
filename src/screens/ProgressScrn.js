@@ -1,25 +1,84 @@
 import React, { useState } from "react";
 import { TouchableOpacity, ScrollView, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Svg, { Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText as Text } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
 
 const periods = ["Today", "This Week", "This Month"];
 
-export default function ProgressScreen({ habits }) {
+function getDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getPeriodDateKeys(period, today) {
+  if (period === "Today") return [getDateKey(today)];
+
+  if (period === "This Week") {
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return getDateKey(date);
+    });
+  }
+
+  return Array.from(
+    {
+      length: new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate(),
+    },
+    (_, index) =>
+      getDateKey(new Date(today.getFullYear(), today.getMonth(), index + 1)),
+  );
+}
+
+function isHabitCompletedOn(habit, dateKey, todayKey) {
+  return (
+    (habit.completedDates || []).includes(dateKey) ||
+    (dateKey === todayKey && habit.completed)
+  );
+}
+
+function getCurrentStreak(habit, today) {
+  const completedDates = new Set(habit.completedDates || []);
+  if (habit.completed) completedDates.add(getDateKey(today));
+
+  let streak = 0;
+  const date = new Date(today);
+  while (completedDates.has(getDateKey(date))) {
+    streak += 1;
+    date.setDate(date.getDate() - 1);
+  }
+  return streak;
+}
+
+export default function ProgressScreen({ habits, onToggleHabit }) {
   const [period, setPeriod] = useState("This Week");
-  const complete = habits.filter((habit) => habit.completed).length;
-  const score = habits.length
-    ? Math.round((complete / habits.length) * 100)
+  const today = new Date();
+  const todayKey = getDateKey(today);
+  const periodDateKeys = getPeriodDateKeys(period, today);
+  const totalChecks = habits.length * periodDateKeys.length;
+  const completedChecks = habits.reduce(
+    (total, habit) =>
+      total +
+      periodDateKeys.filter((dateKey) =>
+        isHabitCompletedOn(habit, dateKey, todayKey),
+      ).length,
+    0,
+  );
+  const score = totalChecks
+    ? Math.round((completedChecks / totalChecks) * 100)
     : 0;
-
-  // Reasons about SafeAreaView and ScrollView:
-
-  // 1. SafeAreaView is used to ensure that the content is displayed within the safe area boundaries of the device
-  // 2. Avoiding notches and other screen obstructions. The ScrollView allows for vertical scrolling of the content,
-  // 3. Making it accessible on smaller screens. TouchableOpacity components are used for interactive elements and,
-  // 4. Allowing users to select different time periods for viewing their progress.
+  const weekDates = getPeriodDateKeys("This Week", today);
+  const currentStreak = Math.max(
+    0,
+    ...habits.map((habit) => getCurrentStreak(habit, today)),
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -60,7 +119,7 @@ export default function ProgressScreen({ habits }) {
               <View
                 style={[styles.legendDot, { backgroundColor: "#F05E79" }]}
               />
-              <Text style={styles.legendText}>Completed {complete}</Text>
+              <Text style={styles.legendText}>Completed {completedChecks}</Text>
             </View>
 
             <View style={styles.legendRow}>
@@ -69,7 +128,7 @@ export default function ProgressScreen({ habits }) {
               />
 
               <Text style={styles.legendText}>
-                Remaining {Math.max(habits.length - complete, 0)}
+                Remaining {Math.max(totalChecks - completedChecks, 0)}
               </Text>
             </View>
 
@@ -81,6 +140,28 @@ export default function ProgressScreen({ habits }) {
             </View>
           </View>
           <View style={styles.scoreRing}>
+            <Svg width={116} height={116} viewBox="0 0 116 116">
+              <Circle
+                cx="58"
+                cy="58"
+                r="49"
+                fill="none"
+                stroke="#ECECEF"
+                strokeWidth="10"
+              />
+              <Circle
+                cx="58"
+                cy="58"
+                r="49"
+                fill="none"
+                stroke="#FF6B86"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 49}`}
+                strokeDashoffset={`${2 * Math.PI * 49 * (1 - score / 100)}`}
+                transform="rotate(-90 58 58)"
+              />
+            </Svg>
             <View style={styles.ringCutout}>
               <Text style={styles.scoreCaption}>Habit score</Text>
               <Text style={styles.scoreValue}>{score}%</Text>
@@ -91,7 +172,7 @@ export default function ProgressScreen({ habits }) {
         <View style={styles.summaryRow}>
           <View style={styles.summaryCell}>
             <Text style={styles.summaryValue}>
-              {complete}/{habits.length}
+              {completedChecks}/{totalChecks}
             </Text>
             <Text style={styles.summaryLabel}>Done {period.toLowerCase()}</Text>
           </View>
@@ -99,67 +180,85 @@ export default function ProgressScreen({ habits }) {
           <View style={styles.summaryDivider} />
 
           <View style={styles.summaryCell}>
-            <Text style={styles.summaryValue}>{complete ? "4" : "0"} days</Text>
-            <Text style={styles.summaryLabel}>Best streak</Text>
+            <Text style={styles.summaryValue}>{currentStreak} days</Text>
+            <Text style={styles.summaryLabel}>Current streak</Text>
           </View>
         </View>
 
         <Text style={styles.sectionTitle}>Habits progress</Text>
-        {habits.map((habit) => (
-          <View
-            key={habit.id}
-            style={[
-              styles.progressCard,
-              { backgroundColor: habit.color || "#4388F5" },
-            ]}
-          >
-            <View style={styles.progressTopRow}>
-              <View style={styles.progressIcon}>
-                <Ionicons
-                  name={habit.icon || "sparkles-outline"}
-                  size={21}
-                  color={habit.color || "#4388F5"}
+        {habits.map((habit) => {
+          const habitCompleted = periodDateKeys.filter((dateKey) =>
+            isHabitCompletedOn(habit, dateKey, todayKey),
+          ).length;
+          const habitProgress = periodDateKeys.length
+            ? Math.round((habitCompleted / periodDateKeys.length) * 100)
+            : 0;
+
+          return (
+            <View
+              key={habit.id}
+              style={[
+                styles.progressCard,
+                { backgroundColor: habit.color || "#4388F5" },
+              ]}
+            >
+              <View style={styles.progressTopRow}>
+                <View style={styles.progressIcon}>
+                  <Ionicons
+                    name={habit.icon || "sparkles-outline"}
+                    size={21}
+                    color={habit.color || "#4388F5"}
+                  />
+                </View>
+
+                <Text numberOfLines={1} style={styles.progressHabitName}>
+                  {habit.title}
+                </Text>
+
+                <Text style={styles.streakPill}>
+                  {habitCompleted} / {periodDateKeys.length}
+                </Text>
+              </View>
+
+              <View style={styles.progressTrack}>
+                <View
+                  style={[styles.progressFill, { width: `${habitProgress}%` }]}
                 />
               </View>
 
-              <Text numberOfLines={1} style={styles.progressHabitName}>
-                {habit.title}
-              </Text>
-
-              <Text style={styles.streakPill}>
-                {habit.completed ? "4 Days" : "2 Days"}
-              </Text>
-            </View>
-
-            <View style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: habit.completed ? "76%" : "38%" },
-                ]}
-              />
-            </View>
-
-            <View style={styles.weekRow}>
-              {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => {
-                const marked =
-                  habit.completed ||
-                  index < (habit.title === "Jogging" ? 2 : 4);
-                return (
-                  <View key={`${day}-${index}`} style={styles.dayStatus}>
-                    <View
-                      style={[styles.dayMark, marked && styles.dayMarkDone]}
+              <View style={styles.weekRow}>
+                {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => {
+                  const dateKey = weekDates[index];
+                  const marked = isHabitCompletedOn(habit, dateKey, todayKey);
+                  return (
+                    <TouchableOpacity
+                      key={`${day}-${index}`}
+                      accessibilityRole="checkbox"
+                      accessibilityLabel={`${habit.title}, ${day}, ${dateKey}`}
+                      accessibilityState={{ checked: marked }}
+                      onPress={() => onToggleHabit(habit.id, dateKey)}
+                      style={styles.dayStatus}
+                      hitSlop={5}
                     >
-                      {marked && (
-                        <Ionicons name="checkmark" size={11} color="#9660E8" />
-                      )}
-                    </View>
-                  </View>
-                );
-              })}
+                      <View
+                        style={[styles.dayMark, marked && styles.dayMarkDone]}
+                      >
+                        {marked && (
+                          <Ionicons
+                            name="checkmark"
+                            size={11}
+                            color={habit.color || "#4388F5"}
+                          />
+                        )}
+                      </View>
+                      <Text style={styles.dayLabel}>{day}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -220,15 +319,13 @@ const styles = StyleSheet.create({
     width: 116,
     height: 116,
     borderRadius: 58,
-    borderWidth: 11,
-    borderColor: "#F05E79",
-    borderTopColor: "#F5CB58",
-    borderRightColor: "#E8E8EA",
     alignItems: "center",
     justifyContent: "center",
-    transform: [{ rotate: "-35deg" }],
   },
-  ringCutout: { alignItems: "center", transform: [{ rotate: "35deg" }] },
+  ringCutout: {
+    position: "absolute",
+    alignItems: "center",
+  },
   scoreCaption: { color: "#92929A", fontSize: 9 },
   scoreValue: {
     color: "#252630",
@@ -303,7 +400,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingHorizontal: 2,
   },
-  dayStatus: { alignItems: "center", gap: 4 },
+  dayStatus: {
+    minWidth: 34,
+    minHeight: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
   dayMark: {
     width: 18,
     height: 18,

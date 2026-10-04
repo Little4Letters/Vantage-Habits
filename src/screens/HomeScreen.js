@@ -6,6 +6,13 @@ import HabitSec from "../components/HabitsSec.js";
 import { AppText as Text } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
 
+function getDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function getWeekDates() {
   // This function calculates the dates for the current week starting from Monday.
   // It creates an array of 7 objects, each representing a day of the week with its corresponding date and day name.
@@ -22,7 +29,7 @@ function getWeekDates() {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
     return {
-      key: date.toISOString(),
+      key: getDateKey(date),
       day: date.toLocaleDateString("en-US", { weekday: "short" }),
       number: date.getDate(),
     };
@@ -49,13 +56,18 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
 
   // Each representing a day of the week with its corresponding date and day name.
   const dates = getWeekDates();
-  const todayIndex = (new Date().getDay() + 6) % 7;
-  const [selectedDate, setSelectedDate] = useState(dates[todayIndex].key);
+  const today = getDateKey(new Date());
+  const [selectedDate, setSelectedDate] = useState(today);
   const [showMonth, setShowMonth] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const monthDates = getMonthDates(visibleMonth);
-  const upcomingHabits = habits.filter((habit) => !habit.completed);
-  const completedHabits = habits.filter((habit) => habit.completed);
+  const isCompletedOnSelectedDate = (habit) =>
+    (habit.completedDates || []).includes(selectedDate) ||
+    (selectedDate === today && habit.completed);
+  const upcomingHabits = habits.filter(
+    (habit) => !isCompletedOnSelectedDate(habit),
+  );
+  const completedHabits = habits.filter(isCompletedOnSelectedDate);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -153,7 +165,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
                   return (
                     <View key={`blank-${index}`} style={styles.monthBlank} />
                   );
-                const dateKey = date.toISOString();
+                const dateKey = getDateKey(date);
                 const selected = selectedDate === dateKey;
                 return (
                   <TouchableOpacity
@@ -194,7 +206,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
                 selectedDate === date.key ? { selected: true } : {}
               }
               key={date.key}
-              onPress={() => setSelectedDate(index)}
+              onPress={() => setSelectedDate(date.key)}
               style={[
                 styles.dateCard,
                 selectedDate === date.key && styles.dateCardActive,
@@ -236,7 +248,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
               key={habit.id}
               {...habit}
               isCompleted={false}
-              onPress={() => onToggleHabit(habit.id)}
+              onPress={() => onToggleHabit(habit.id, selectedDate)}
             />
           ))
         ) : (
@@ -255,7 +267,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
             key={habit.id}
             {...habit}
             isCompleted
-            onPress={() => onToggleHabit(habit.id)}
+            onPress={() => onToggleHabit(habit.id, selectedDate)}
           />
         ))}
       </ScrollView>

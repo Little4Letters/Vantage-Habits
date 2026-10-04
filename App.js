@@ -67,6 +67,13 @@ const startingHabits = [
   },
 ];
 
+function getDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 const tabIcons = {
   Home: ["home-outline", "home"],
   Progress: ["stats-chart-outline", "stats-chart"],
@@ -133,13 +140,33 @@ function CustomTabBar({ state, navigation }) {
 }
 
 function HabitTabs() {
-  const [habits, setHabits] = useState(startingHabits);
-  const toggleHabit = (habitId) => {
+  const [habits, setHabits] = useState(() => {
+    const today = getDateKey();
+    return startingHabits.map((habit) => ({
+      ...habit,
+      completedDates: habit.completed ? [today] : [],
+    }));
+  });
+  const toggleHabit = (habitId, date = getDateKey()) => {
     setHabits((current) =>
       current.map((habit) =>
-        habit.id === habitId
-          ? { ...habit, completed: !habit.completed }
-          : habit,
+        habit.id !== habitId
+          ? habit
+          : (() => {
+              const completedDates = habit.completedDates || [];
+              const isCompleted = completedDates.includes(date);
+              const nextDates = isCompleted
+                ? completedDates.filter(
+                    (completedDate) => completedDate !== date,
+                  )
+                : [...completedDates, date];
+              return {
+                ...habit,
+                completedDates: nextDates,
+                completed:
+                  date === getDateKey() ? !isCompleted : habit.completed,
+              };
+            })(),
       ),
     );
   };
@@ -147,7 +174,7 @@ function HabitTabs() {
   const updateHabit = (updatedHabit) =>
     setHabits((current) =>
       current.map((habit) =>
-        habit.id === updatedHabit.id ? updatedHabit : habit,
+        habit.id === updatedHabit.id ? { ...habit, ...updatedHabit } : habit,
       ),
     );
   const deleteHabit = (habitId) =>
@@ -167,7 +194,13 @@ function HabitTabs() {
         )}
       </Tab.Screen>
       <Tab.Screen name="Progress">
-        {(props) => <ProgressScreen {...props} habits={habits} />}
+        {(props) => (
+          <ProgressScreen
+            {...props}
+            habits={habits}
+            onToggleHabit={toggleHabit}
+          />
+        )}
       </Tab.Screen>
       <Tab.Screen name="Add">
         {(props) => (

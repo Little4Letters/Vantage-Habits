@@ -27,7 +27,10 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.safeArea, !editing && styles.profileSafeArea]}
+      edges={["top"]}
+    >
       <ScrollView
         contentContainerStyle={styles.screenContent}
         keyboardShouldPersistTaps="handled"
@@ -71,38 +74,65 @@ export default function ProfileScreen() {
 
             <Text style={styles.fieldLabel}>What is your gender?</Text>
             <View style={styles.genderRow}>
-              {["Male", "Female", "Other"].map((option) => (
+              {[
+                { label: "Male", icon: "male" },
+                { label: "Female", icon: "female" },
+                { label: "Other", icon: "male-female" },
+              ].map((option) => (
                 <TouchableOpacity
-                  key={option}
+                  key={option.label}
                   accessibilityRole="button"
                   accessibilityState={
-                    gender === option ? { selected: true } : {}
+                    gender === option.label ? { selected: true } : {}
                   }
-                  onPress={() => setGender(option)}
+                  onPress={() => setGender(option.label)}
                   style={[
                     styles.genderOption,
-                    gender === option && styles.genderSelected,
+                    gender === option.label && styles.genderSelected,
                   ]}
                 >
+                  <Ionicons
+                    name={option.icon}
+                    size={19}
+                    color={
+                      gender === option.label ? theme.white : theme.natural[400]
+                    }
+                  />
                   <Text
                     style={[
                       styles.genderText,
-                      gender === option && styles.genderTextSelected,
+                      gender === option.label && styles.genderTextSelected,
                     ]}
                   >
-                    {option}
+                    {option.label}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
             <Text style={styles.fieldLabel}>What is your date of birth?</Text>
-            <TextInput
-              accessibilityLabel="Date of birth"
-              value={birthDate}
-              onChangeText={setBirthDate}
-              style={styles.profileInput}
-            />
+            <View style={styles.birthDateRow}>
+              {birthDate.split(" / ").map((part, index) => (
+                <TextInput
+                  key={index}
+                  accessibilityLabel={
+                    ["Birth day", "Birth month", "Birth year"][index]
+                  }
+                  value={part}
+                  onChangeText={(value) =>
+                    setBirthDate((current) =>
+                      current
+                        .split(" / ")
+                        .map((datePart, partIndex) =>
+                          partIndex === index ? value : datePart,
+                        )
+                        .join(" / "),
+                    )
+                  }
+                  style={[styles.profileInput, styles.birthDateInput]}
+                />
+              ))}
+            </View>
 
             <TouchableOpacity
               accessibilityRole="button"
@@ -132,9 +162,6 @@ export default function ProfileScreen() {
                     color={theme.white}
                   />
                 </TouchableOpacity>
-              </View>
-              <View style={styles.profileAvatar}>
-                <Ionicons name="person" size={22} color={theme.primary[600]} />
               </View>
             </View>
 
@@ -172,6 +199,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: theme.natural[50] },
+  profileSafeArea: { backgroundColor: "#FF637D" },
   screenContent: { paddingTop: 16, paddingHorizontal: 17, paddingBottom: 126 },
   pageEyebrow: {
     color: theme.primary[400],
@@ -208,18 +236,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  profileCopy: { flex: 1, marginLeft: 13 },
-  profileName: { color: theme.white, fontSize: 16, fontWeight: "800" },
+  profileCopy: { flex: 1, marginLeft: 0, paddingRight: 50 },
+  profileName: { color: theme.white, fontSize: 18, fontWeight: "800" },
   profileSubtitle: {
-    color: "rgba(255,255,255,0.85)",
-    fontSize: 10,
+    color: "rgba(255,255,255,0.88)",
+    fontSize: 11,
     marginTop: 4,
   },
   editButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.18)",
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.2)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -260,42 +291,39 @@ const styles = StyleSheet.create({
   },
   localNote: { color: "#9A9AA2", fontSize: 11, lineHeight: 16, marginTop: 21 },
   profileBanner: {
-    minHeight: 131,
-    justifyContent: "space-between",
-    backgroundColor: theme.primary[400],
-    borderRadius: 16,
-    padding: 15,
-    marginBottom: 15,
+    minHeight: 162,
+    justifyContent: "flex-end",
+    backgroundColor: "#FF637D",
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+    padding: 19,
+    marginBottom: 17,
+    marginTop: -16,
+    marginHorizontal: -17,
+    overflow: "hidden",
   },
-  profileBannerTop: { flexDirection: "row", alignItems: "center" },
-  profileAvatar: {
-    position: "absolute",
-    bottom: 14,
-    right: 17,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.white,
+  profileBannerTop: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    paddingTop: 18,
+    paddingHorizontal: 5,
   },
   menuList: {
-    paddingHorizontal: 10,
-    backgroundColor: theme.white,
-    borderRadius: 14,
+    gap: 8,
   },
   menuItem: {
-    minHeight: 49,
+    minHeight: 57,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.tertiary[50],
+    gap: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#F0F0F2",
+    borderRadius: 12,
   },
   menuIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: theme.tertiary[900],
@@ -351,15 +379,18 @@ const styles = StyleSheet.create({
   genderRow: { flexDirection: "row", gap: 8 },
   genderOption: {
     flex: 1,
-    minHeight: 42,
+    minHeight: 62,
     alignItems: "center",
     justifyContent: "center",
+    gap: 4,
     backgroundColor: theme.tertiary[50],
     borderRadius: 11,
   },
   genderSelected: { backgroundColor: theme.tertiary[900] },
   genderText: { color: theme.natural[500], fontSize: 10, fontWeight: "600" },
   genderTextSelected: { color: theme.white },
+  birthDateRow: { flexDirection: "row", gap: 8 },
+  birthDateInput: { flex: 1, textAlign: "center", paddingHorizontal: 6 },
   updateButton: {
     minHeight: 45,
     alignItems: "center",

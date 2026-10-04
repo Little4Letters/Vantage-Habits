@@ -207,74 +207,74 @@ export default function AddHabitScrn({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.topBar}>
+          <View style={styles.headingRow}>
             <TouchableOpacity
               accessibilityRole="button"
+              accessibilityLabel="Go back to home"
               onPress={() => navigation.navigate("Home")}
               style={styles.backButton}
             >
               <Ionicons name="chevron-back" size={18} color="#30313A" />
-              <Text style={styles.backText}>Go Back</Text>
             </TouchableOpacity>
-            {mode === "create" ? (
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={saveHabit}
-                style={styles.topAction}
-              >
-                <Text style={styles.topActionText}>
-                  {editingId ? "Update" : "Create"}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={() => {
-                  resetForm();
-                  setMode("create");
-                }}
-                style={styles.topAction}
-              >
-                <Ionicons name="add" size={17} color="#FFFFFF" />
-                <Text style={styles.topActionText}>Add Habit</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={styles.headingRow}>
-            <View style={styles.headingIcon}>
-              <Ionicons
-                name={mode === "create" ? "chevron-back" : "options-outline"}
-                size={19}
-                color="#5A5B64"
-              />
-            </View>
             <View style={styles.headingCopy}>
               <Text style={styles.headingTitle}>
-                {mode === "create" ? "Create Habits" : "Manage Habits"}
-              </Text>
+              {mode === "create" && editingId
+                ? "Edit Habit"
+                : mode === "create"
+                  ? "Create "
+                  : "Manage "}
+              {!(mode === "create" && editingId) && (
+                <Text style={styles.headingHighlight}>Habits</Text>
+              )}
+            </Text>
               <Text style={styles.headingSubtitle}>
                 {mode === "create"
-                  ? "Create Your Custom Habit"
+                  ? editingId
+                    ? "Update your habit details"
+                    : "Create your custom habit"
                   : "Update and delete your habits"}
               </Text>
             </View>
             <TouchableOpacity
               accessibilityRole="button"
+              accessibilityLabel={
+                mode === "create" ? "Manage habits" : "Add a habit"
+              }
               onPress={() => {
-                if (mode === "manage") resetForm();
-                setMode(mode === "create" ? "manage" : "create");
+                if (mode === "create") {
+                  resetForm();
+                  setMode("manage");
+                } else {
+                  resetForm();
+                  setMode("create");
+                }
               }}
               style={styles.modeButton}
             >
+              {mode === "manage" && (
+                <Ionicons name="add" size={16} color="#FFFFFF" />
+              )}
               <Text style={styles.modeButtonText}>
-                {mode === "create" ? "Manage" : "Create"}
+                {mode === "create" ? "Manage" : "Add Habit"}
               </Text>
             </TouchableOpacity>
           </View>
 
           {mode === "create" ? (
             <>
+              <View style={styles.sectionHeadingRow}>
+                <View>
+                  <Text style={styles.sectionHeading}>Quick start</Text>
+                  <Text style={styles.sectionHint}>
+                    Pick a template or create your own
+                  </Text>
+                </View>
+                <View style={styles.templateCount}>
+                  <Text style={styles.templateCountText}>
+                    {String(presets.length).padStart(2, "0")}
+                  </Text>
+                </View>
+              </View>
               <View style={styles.presetGrid}>
                 {presets.map((preset) => (
                   <HabitPresetCard
@@ -543,68 +543,70 @@ export default function AddHabitScrn({
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: theme.natural[50] },
+  safeArea: { flex: 1, backgroundColor: "#F4F5F8" },
   keyboardView: { flex: 1 },
-  container: { paddingHorizontal: 18, paddingTop: 10, paddingBottom: 130 },
-  topBar: {
+  container: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 120 },
+  headingRow: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 22,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    borderRadius: 19,
+    backgroundColor: "#FFFFFF",
+  },
+  headingCopy: { flex: 1, minWidth: 0 },
+  headingTitle: {
+    color: theme.tertiary[900],
+    fontSize: 19,
+    fontWeight: "700",
+    letterSpacing: -0.4,
+  },
+  headingHighlight: { color: theme.primary[600] },
+  headingSubtitle: { color: theme.natural[400], fontSize: 11, marginTop: 3 },
+  sectionHeadingRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 17,
+    marginBottom: 12,
   },
-  backButton: {
-    minHeight: 40,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 12,
-    backgroundColor: theme.natural[100],
-    borderRadius: 22,
+  sectionHeading: {
+    color: theme.tertiary[900],
+    fontSize: 14,
+    fontWeight: "700",
   },
-  backText: { color: theme.tertiary[900], fontSize: 11, fontWeight: "600" },
-  topAction: {
-    minHeight: 40,
-    minWidth: 72,
-    flexDirection: "row",
+  sectionHint: { color: theme.natural[400], fontSize: 10, marginTop: 3 },
+  templateCount: {
+    minWidth: 32,
+    height: 26,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
-    paddingHorizontal: 15,
-    backgroundColor: theme.tertiary[900],
-    borderRadius: 22,
+    borderRadius: 13,
+    backgroundColor: "#FFFFFF",
   },
-  topActionText: { color: "#FFFFFF", fontSize: 11, fontWeight: "600" },
-  headingRow: {
-    minHeight: 60,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: theme.white,
-    borderRadius: 15,
-    marginBottom: 16,
-    elevation: 1,
+  templateCountText: {
+    color: theme.natural[500],
+    fontSize: 10,
+    fontWeight: "700",
   },
-  headingIcon: {
-    width: 33,
-    height: 33,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 17,
-    backgroundColor: theme.tertiary[50],
-    marginRight: 10,
-  },
-  headingCopy: { flex: 1, minWidth: 0 },
-  headingTitle: { color: theme.tertiary[900], fontSize: 15, fontWeight: "700" },
-  headingSubtitle: { color: theme.natural[400], fontSize: 9, marginTop: 2 },
   modeButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 12,
-    backgroundColor: theme.tertiary[50],
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 3,
+    paddingHorizontal: 13,
+    borderRadius: 18,
+    backgroundColor: theme.tertiary[900],
   },
   modeButtonText: {
-    color: theme.natural[600],
+    color: "#FFFFFF",
     fontSize: 10,
     fontWeight: "600",
   },
@@ -612,189 +614,195 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    rowGap: 9,
-    marginBottom: 14,
+    rowGap: 10,
+    marginBottom: 18,
   },
   formPanel: {
-    padding: 12,
+    padding: 16,
     backgroundColor: theme.white,
-    borderRadius: 14,
-    marginBottom: 10,
+    borderRadius: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#EEF0F4",
+    shadowColor: "#1B2233",
+    shadowOpacity: 0.035,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1,
   },
   inputHeading: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 7,
+    marginBottom: 9,
   },
   sectionTitle: {
     color: theme.tertiary[800],
-    fontSize: 11,
-    fontWeight: "600",
-    marginBottom: 8,
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: 10,
   },
   previewIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
+    width: 34,
+    height: 34,
+    borderRadius: 11,
     alignItems: "center",
     justifyContent: "center",
   },
   input: {
-    minHeight: 40,
-    paddingHorizontal: 11,
-    borderRadius: 10,
+    minHeight: 48,
+    paddingHorizontal: 14,
+    borderRadius: 12,
     backgroundColor: theme.tertiary[50],
     color: theme.tertiary[900],
-    fontSize: 12,
+    fontSize: 14,
   },
-  errorText: { color: "#D64E64", fontSize: 10, marginTop: 6 },
+  errorText: { color: "#D64E64", fontSize: 11, marginTop: 7 },
   colorRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 11,
-    gap: 8,
+    justifyContent: "flex-start",
+    marginTop: 14,
+    gap: 12,
   },
   colorChoice: {
-    flex: 1,
-    height: 17,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
   colorSelected: {
-    height: 21,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: theme.white,
     elevation: 2,
   },
-  timeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  timeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 9 },
   timeOption: {
     width: "48%",
-    minHeight: 35,
+    minHeight: 42,
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
-    paddingHorizontal: 9,
-    backgroundColor: "#F1F1F2",
-    borderRadius: 10,
+    gap: 9,
+    paddingHorizontal: 12,
+    backgroundColor: "#F4F5F7",
+    borderRadius: 12,
   },
   timeSelected: { backgroundColor: theme.tertiary[900] },
-  timeText: { color: "#565760", fontSize: 10 },
+  timeText: { color: "#565760", fontSize: 11, fontWeight: "600" },
   timeTextSelected: { color: "#FFFFFF" },
   frequencyRow: {
     flexDirection: "row",
-    gap: 5,
-    padding: 3,
-    backgroundColor: "#F0F0F1",
-    borderRadius: 10,
+    gap: 4,
+    padding: 4,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 12,
   },
   frequencyOption: {
     flex: 1,
-    minHeight: 29,
+    minHeight: 34,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
+    borderRadius: 9,
   },
   frequencySelected: { backgroundColor: theme.white, elevation: 1 },
-  frequencyText: { color: "#6F7079", fontSize: 9 },
-  frequencyTextSelected: { color: "#2C2D36", fontWeight: "600" },
+  frequencyText: { color: "#6F7079", fontSize: 10 },
+  frequencyTextSelected: { color: "#2C2D36", fontWeight: "700" },
   dayRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 4,
-    marginTop: 9,
+    gap: 6,
+    marginTop: 12,
   },
   dayOption: {
     flex: 1,
-    minHeight: 27,
+    minHeight: 32,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: "#F0F0F1",
+    borderRadius: 10,
+    backgroundColor: "#F3F4F6",
   },
   daySelected: { backgroundColor: theme.tertiary[900] },
-  dayText: { color: "#62636C", fontSize: 8 },
+  dayText: { color: "#62636C", fontSize: 9, fontWeight: "600" },
   dayTextSelected: { color: "#FFFFFF" },
-  durationPanel: { paddingVertical: 10 },
-  durationHeading: { flexDirection: "row", alignItems: "center", gap: 7 },
+  durationPanel: { paddingVertical: 14 },
+  durationHeading: { flexDirection: "row", alignItems: "center", gap: 9 },
   dateIcon: {
-    width: 24,
-    height: 24,
+    width: 30,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: "#F0F0F1",
+    borderRadius: 10,
+    backgroundColor: "#F3F4F6",
   },
-  durationRow: { flexDirection: "row", gap: 6, marginTop: 5 },
+  durationRow: { flexDirection: "row", gap: 8, marginTop: 8 },
   durationOption: {
     flex: 1,
-    minHeight: 29,
+    minHeight: 36,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F0F0F1",
-    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
   },
   durationSelected: { backgroundColor: theme.tertiary[900] },
-  durationText: { color: "#62636C", fontSize: 8 },
+  durationText: { color: "#62636C", fontSize: 10 },
   durationTextSelected: { color: "#FFFFFF" },
   createButton: {
-    minHeight: 43,
+    minHeight: 50,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    borderRadius: 22,
+    gap: 8,
+    borderRadius: 25,
     backgroundColor: theme.tertiary[900],
-    marginTop: 2,
+    marginTop: 4,
   },
-  createButtonText: { color: "#FFFFFF", fontSize: 11, fontWeight: "600" },
-  manageSection: { paddingTop: 5 },
+  createButtonText: { color: "#FFFFFF", fontSize: 12, fontWeight: "700" },
+  manageSection: { paddingTop: 2 },
   managedHabit: {
-    minHeight: 66,
+    minHeight: 74,
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 12,
-    paddingHorizontal: 9,
-    marginBottom: 9,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    marginBottom: 10,
   },
   managedHabitMain: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     minWidth: 0,
-    gap: 9,
+    gap: 11,
   },
   managedIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 42,
+    height: 42,
+    borderRadius: 13,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
   },
   managedCopy: { flex: 1, minWidth: 0 },
-  managedTitle: { color: "#FFFFFF", fontSize: 11, fontWeight: "700" },
-  managedDetail: { color: "rgba(255,255,255,0.84)", fontSize: 9, marginTop: 3 },
+  managedTitle: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
+  managedDetail: { color: "rgba(255,255,255,0.84)", fontSize: 10, marginTop: 3 },
   deleteButton: {
-    minHeight: 37,
+    minHeight: 40,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     backgroundColor: "rgba(32,33,45,0.22)",
     borderRadius: 10,
     marginLeft: 8,
   },
-  deleteText: { color: "#FFFFFF", fontSize: 9, fontWeight: "600" },
+  deleteText: { color: "#FFFFFF", fontSize: 10, fontWeight: "600" },
   emptyState: {
-    minHeight: 110,
+    minHeight: 140,
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
     backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    borderRadius: 18,
   },
-  emptyText: { color: "#96969E", fontSize: 11 },
+  emptyText: { color: "#96969E", fontSize: 12 },
 });
