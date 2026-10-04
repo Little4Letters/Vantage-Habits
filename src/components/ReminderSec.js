@@ -1,5 +1,6 @@
-import { View, Text, Switch, StyleSheet } from "react-native";
+import { View, Switch, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { PoppinsText as Text } from "./Typography.js";
 
 export default function ReminderRow({ icon, title, detail, value, onChange }) {
   return (

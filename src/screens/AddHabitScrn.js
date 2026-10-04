@@ -5,12 +5,14 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  PoppinsText as Text,
+  PoppinsTextInput as TextInput,
+} from "../components/Typography.js";
 
 const colors = ["#4388F5", "#F58D60", "#9660E8", "#F05E79", "#47B9A7"];
 const icons = [

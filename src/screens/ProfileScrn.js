@@ -3,13 +3,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ReminderRow from "../components/ReminderSec.js";
+import { PoppinsText as Text } from "../components/Typography.js";
 
 export default function ProfileScreen() {
   const [weeklySummary, setWeeklySummary] = useState(true);

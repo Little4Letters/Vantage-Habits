@@ -1,5 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { PoppinsText as Text } from "./Typography.js";
 
 export default function HabitCard({
   title,

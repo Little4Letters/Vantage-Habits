@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
+import { View, StyleSheet, Pressable, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HabitSec from "../components/HabitsSec.js";
+import { PoppinsText as Text } from "../components/Typography.js";
 
 function getWeekDates() {
   const today = new Date();
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   greeting: { fontSize: 22, fontWeight: "800", color: "#20212A" },
-  greetingHighlight: { color: "#E36F80" },
+  greetingHighlight: { color: "#E36F80", fontWeight: "800" },
   weather: { fontSize: 13, color: "#85858D", marginTop: 6 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   brandMark: {

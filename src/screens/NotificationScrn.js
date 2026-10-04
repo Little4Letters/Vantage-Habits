@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ReminderRow from "../components/ReminderSec.js";
+import { PoppinsText as Text } from "../components/Typography.js";
 
 export default function AlertsScreen() {
   const [morningReminder, setMorningReminder] = useState(true);
