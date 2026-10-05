@@ -200,7 +200,12 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: theme.natural[50] },
   profileSafeArea: { backgroundColor: "#FF637D" },
-  screenContent: { paddingTop: 16, paddingHorizontal: 17, paddingBottom: 126 },
+  screenContent: {
+    paddingTop: 16,
+    paddingHorizontal: 17,
+    paddingBottom: 126,
+    backgroundColor: theme.natural[50],
+  },
   pageEyebrow: {
     color: theme.primary[400],
     fontSize: 10,
