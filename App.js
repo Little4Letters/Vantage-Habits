@@ -14,6 +14,9 @@ import {
 } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
+// The following imports presented here as App.jsx is the main entry point of the app and,
+// It imports various components and screens from the src directory. The code also includes a custom tab bar for navigation between different screens in the app.
+
 import {
   useFonts,
   NunitoSans_400Regular,
@@ -45,7 +48,7 @@ const startingHabits = [
   },
   {
     id: "tennis",
-    title: "Tennis",
+    title: "Sports",
     frequency: "Monday, Thursday",
     color: "#F58D60",
     icon: "tennisball-outline",
