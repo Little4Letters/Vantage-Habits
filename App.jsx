@@ -23,11 +23,11 @@ import {
   NunitoSans_800ExtraBold,
 } from "@expo-google-fonts/nunito-sans";
 
-import HomeScreen from "./src/screens/HomeScreen.js";
-import AddHabitScrn from "./src/screens/AddHabitScrn.js";
-import ProgressScreen from "./src/screens/ProgressScrn.js";
-import AlertsScreen from "./src/screens/NotificationScrn.js";
-import ProfileScreen from "./src/screens/ProfileScrn.js";
+import HomeScreen from "./src/screens/HomeScreen.jsx";
+import AddHabitScrn from "./src/screens/AddHabitScrn.jsx";
+import ProgressScreen from "./src/screens/ProgressScrn.jsx";
+import AlertsScreen from "./src/screens/NotificationScrn.jsx";
+import ProfileScreen from "./src/screens/ProfileScrn.jsx";
 import LoginScreen from "./src/screens/LoginScreen.tsx";
 import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
 import { palette as theme } from "./src/theme.js";

@@ -51,7 +51,7 @@ const presets = [
     days: ["Sat", "Sun"],
   },
   {
-    title: "Tennis",
+    title: "Sports",
     detail: "Monday, Thursday",
     icon: "tennisball-outline",
     color: "#F58D60",
@@ -218,15 +218,15 @@ export default function AddHabitScrn({
             </TouchableOpacity>
             <View style={styles.headingCopy}>
               <Text style={styles.headingTitle}>
-              {mode === "create" && editingId
-                ? "Edit Habit"
-                : mode === "create"
-                  ? "Create "
-                  : "Manage "}
-              {!(mode === "create" && editingId) && (
-                <Text style={styles.headingHighlight}>Habits</Text>
-              )}
-            </Text>
+                {mode === "create" && editingId
+                  ? "Edit Habit"
+                  : mode === "create"
+                    ? "Create "
+                    : "Manage "}
+                {!(mode === "create" && editingId) && (
+                  <Text style={styles.headingHighlight}>Habits</Text>
+                )}
+              </Text>
               <Text style={styles.headingSubtitle}>
                 {mode === "create"
                   ? editingId
@@ -783,7 +783,11 @@ const styles = StyleSheet.create({
   },
   managedCopy: { flex: 1, minWidth: 0 },
   managedTitle: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
-  managedDetail: { color: "rgba(255,255,255,0.84)", fontSize: 10, marginTop: 3 },
+  managedDetail: {
+    color: "rgba(255,255,255,0.84)",
+    fontSize: 10,
+    marginTop: 3,
+  },
   deleteButton: {
     minHeight: 40,
     flexDirection: "row",
