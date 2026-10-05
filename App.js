@@ -28,6 +28,8 @@ import AddHabitScrn from "./src/screens/AddHabitScrn.js";
 import ProgressScreen from "./src/screens/ProgressScrn.js";
 import AlertsScreen from "./src/screens/NotificationScrn.js";
 import ProfileScreen from "./src/screens/ProfileScrn.js";
+import LoginScreen from "./src/screens/LoginScreen.tsx";
+import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
 import { palette as theme } from "./src/theme.js";
 
 const Tab = createBottomTabNavigator();
@@ -227,6 +229,7 @@ export default function App() {
     NunitoSans_700Bold,
     NunitoSans_800ExtraBold,
   });
+  const [entryScreen, setEntryScreen] = useState("onboarding");
 
   // ADDED: Show a loading screen until the fonts are ready
   if (!fontsLoaded) {
@@ -241,7 +244,19 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <NavigationContainer>
-        <HabitTabs />
+        {entryScreen === "app" ? (
+          <HabitTabs />
+        ) : entryScreen === "login" ? (
+          <LoginScreen
+            onBack={() => setEntryScreen("onboarding")}
+            onEnterApp={() => setEntryScreen("app")}
+          />
+        ) : (
+          <OnboardingScreen
+            onLogin={() => setEntryScreen("login")}
+            onEnterApp={() => setEntryScreen("app")}
+          />
+        )}
       </NavigationContainer>
     </SafeAreaProvider>
   );
