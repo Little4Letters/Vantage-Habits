@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { AppText as Text } from "./Typography.js";
+import HabitGlyph from "./HabitGlyph.js";
 import { palette as theme } from "../theme.js";
 
 export default function HabitCard({
@@ -8,6 +9,7 @@ export default function HabitCard({
   frequency,
   color,
   icon,
+  iconType,
   isCompleted,
   onPress,
 }) {
@@ -27,8 +29,9 @@ export default function HabitCard({
             isCompleted && styles.iconPlaceholderCompleted,
           ]}
         >
-          <Ionicons
-            name={icon || "sparkles-outline"}
+          <HabitGlyph
+            icon={icon || "sparkles-outline"}
+            iconType={iconType}
             size={21}
             color={isCompleted ? theme.tertiary[500] : color || "#4388F5"}
           />

@@ -14,15 +14,62 @@ import {
   AppTextInput as TextInput,
 } from "../components/Typography.js";
 import HabitPresetCard from "../components/HabitPresetCard.js";
+import HabitGlyph from "../components/HabitGlyph.js";
 import { palette as theme } from "../theme.js";
 
 const colors = [
   theme.primary[600],
   theme.primary[400],
+  "#F05E79",
   theme.secondary[500],
+  "#F58D60",
+  "#F2B84B",
   theme.tertiary[500],
   "#4388F5",
+  "#6AA4F5",
   "#47B9A7",
+  "#9660E8",
+  "#E878AE",
+];
+const iconChoices = [
+  "flower-outline",
+  "body-outline",
+  "tennisball-outline",
+  "fitness-outline",
+  "game-controller-outline",
+  "water-outline",
+  "book-outline",
+  "bed-outline",
+  "sparkles-outline",
+  "walk-outline",
+  "bicycle-outline",
+  "musical-notes-outline",
+  "leaf-outline",
+  "heart-outline",
+  "restaurant-outline",
+  "cafe-outline",
+  "camera-outline",
+  "brush-outline",
+];
+const emojiChoices = [
+  "🧘",
+  "🧘‍♀️",
+  "🎾",
+  "🏋️",
+  "♟️",
+  "🏊",
+  "📖",
+  "🛏️",
+  "✨",
+  "🚶",
+  "🚴",
+  "🎵",
+  "🌱",
+  "❤️",
+  "🍎",
+  "☕",
+  "📷",
+  "🎨",
 ];
 const frequencies = ["One Time", "Daily", "Monthly"];
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -112,6 +159,9 @@ export default function AddHabitScrn({
   const [frequency, setFrequency] = useState("Daily");
   const [color, setColor] = useState(colors[0]);
   const [icon, setIcon] = useState("flower-outline");
+  const [iconType, setIconType] = useState("icon");
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [iconPickerTab, setIconPickerTab] = useState("icons");
   const [time, setTime] = useState("Anytime");
   const [selectedDays, setSelectedDays] = useState(days);
   const [duration, setDuration] = useState("2 Months");
@@ -123,6 +173,7 @@ export default function AddHabitScrn({
     setFrequency("Daily");
     setColor(colors[0]);
     setIcon("flower-outline");
+    setIconType("icon");
     setTime("Anytime");
     setSelectedDays(days);
     setDuration("2 Months");
@@ -133,6 +184,7 @@ export default function AddHabitScrn({
   const selectPreset = (preset) => {
     setTitle(preset.title);
     setIcon(preset.icon);
+    setIconType("icon");
     setColor(preset.color);
     setFrequency(preset.repeat);
     setSelectedDays(preset.days);
@@ -144,6 +196,7 @@ export default function AddHabitScrn({
     setFrequency(habit.repeat || "Daily");
     setColor(habit.color || colors[0]);
     setIcon(habit.icon || "flower-outline");
+    setIconType(habit.iconType || "icon");
     setTime(habit.time || "Anytime");
     setSelectedDays(habit.days || days);
     setDuration(habit.duration || "2 Months");
@@ -171,6 +224,7 @@ export default function AddHabitScrn({
       repeat: frequency,
       color,
       icon,
+      iconType,
       time,
       days: selectedDays,
       duration,
@@ -289,11 +343,19 @@ export default function AddHabitScrn({
               <View style={styles.formPanel}>
                 <View style={styles.inputHeading}>
                   <Text style={styles.sectionTitle}>Habit title</Text>
-                  <View
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Choose habit icon or emoji"
+                    onPress={() => setIconPickerOpen(true)}
                     style={[styles.previewIcon, { backgroundColor: color }]}
                   >
-                    <Ionicons name={icon} size={18} color="#FFFFFF" />
-                  </View>
+                    <HabitGlyph
+                      icon={icon}
+                      iconType={iconType}
+                      size={20}
+                      color="#FFFFFF"
+                    />
+                  </TouchableOpacity>
                 </View>
                 <TextInput
                   accessibilityLabel="Habit title"
@@ -310,7 +372,11 @@ export default function AddHabitScrn({
                 />
                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-                <View style={styles.colorRow}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.colorRow}
+                >
                   {colors.map((option) => (
                     <TouchableOpacity
                       key={option}
@@ -331,7 +397,7 @@ export default function AddHabitScrn({
                       )}
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               </View>
 
               <View style={styles.formPanel}>
@@ -491,8 +557,9 @@ export default function AddHabitScrn({
                       style={styles.managedHabitMain}
                     >
                       <View style={styles.managedIcon}>
-                        <Ionicons
-                          name={habit.icon || "sparkles-outline"}
+                        <HabitGlyph
+                          icon={habit.icon || "sparkles-outline"}
+                          iconType={habit.iconType}
                           size={19}
                           color={habit.color || colors[0]}
                         />
@@ -538,6 +605,122 @@ export default function AddHabitScrn({
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      {iconPickerOpen && (
+        <View style={styles.iconPickerOverlay}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Close icon picker"
+            onPress={() => setIconPickerOpen(false)}
+            style={styles.iconPickerBackdrop}
+          />
+          <View style={styles.iconPickerSheet}>
+            <View style={styles.pickerHeading}>
+              <View>
+                <Text style={styles.pickerTitle}>Choose a habit icon</Text>
+                <Text style={styles.pickerSubtitle}>
+                  Pick an icon or emoji for this habit
+                </Text>
+              </View>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Close icon picker"
+                onPress={() => setIconPickerOpen(false)}
+                style={styles.pickerClose}
+              >
+                <Ionicons name="close" size={20} color={theme.tertiary[800]} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.pickerTabs}>
+              {[
+                { key: "icons", label: "Icons" },
+                { key: "emojis", label: "Emojis" },
+              ].map((tab) => (
+                <TouchableOpacity
+                  key={tab.key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: iconPickerTab === tab.key }}
+                  onPress={() => setIconPickerTab(tab.key)}
+                  style={[
+                    styles.pickerTab,
+                    iconPickerTab === tab.key && styles.pickerTabActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.pickerTabText,
+                      iconPickerTab === tab.key && styles.pickerTabTextActive,
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <ScrollView
+              contentContainerStyle={styles.pickerGrid}
+              showsVerticalScrollIndicator={false}
+            >
+              {iconPickerTab === "icons"
+                ? iconChoices.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Choose ${option.replaceAll("-outline", "").replaceAll("-", " ")} icon`}
+                      accessibilityState={{
+                        selected: iconType === "icon" && icon === option,
+                      }}
+                      onPress={() => {
+                        setIcon(option);
+                        setIconType("icon");
+                        setIconPickerOpen(false);
+                      }}
+                      style={styles.pickerOption}
+                    >
+                      <View
+                        style={[
+                          styles.pickerGlyph,
+                          iconType === "icon" &&
+                            icon === option &&
+                            styles.pickerGlyphSelected,
+                        ]}
+                      >
+                        <Ionicons name={option} size={21} color={color} />
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                : emojiChoices.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Choose ${option} emoji`}
+                      accessibilityState={{
+                        selected: iconType === "emoji" && icon === option,
+                      }}
+                      onPress={() => {
+                        setIcon(option);
+                        setIconType("emoji");
+                        setIconPickerOpen(false);
+                      }}
+                      style={styles.pickerOption}
+                    >
+                      <View
+                        style={[
+                          styles.pickerGlyph,
+                          iconType === "emoji" &&
+                            icon === option &&
+                            styles.pickerGlyphSelected,
+                        ]}
+                      >
+                        <Text style={styles.pickerEmoji}>{option}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+            </ScrollView>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -662,7 +845,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     marginTop: 14,
-    gap: 12,
+    gap: 10,
+    paddingRight: 3,
   },
   colorChoice: {
     width: 28,
@@ -809,4 +993,83 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   emptyText: { color: "#96969E", fontSize: 12 },
+  iconPickerOverlay: {
+    ...StyleSheet.absoluteFill,
+    justifyContent: "flex-end",
+    zIndex: 10,
+  },
+  iconPickerBackdrop: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(18,18,26,0.4)",
+  },
+  iconPickerSheet: {
+    maxHeight: "72%",
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 26,
+    backgroundColor: theme.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  pickerHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  pickerTitle: {
+    color: theme.tertiary[900],
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  pickerSubtitle: { color: theme.natural[500], fontSize: 10, marginTop: 3 },
+  pickerClose: {
+    width: 34,
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 17,
+    backgroundColor: theme.tertiary[50],
+  },
+  pickerTabs: {
+    flexDirection: "row",
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: theme.tertiary[50],
+    marginBottom: 14,
+  },
+  pickerTab: {
+    flex: 1,
+    minHeight: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9,
+  },
+  pickerTabActive: { backgroundColor: theme.white },
+  pickerTabText: { color: theme.natural[500], fontSize: 11 },
+  pickerTabTextActive: {
+    color: theme.tertiary[900],
+    fontWeight: "700",
+  },
+  pickerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 10,
+  },
+  pickerOption: { width: "19%", alignItems: "center" },
+  pickerGlyph: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 13,
+    backgroundColor: theme.tertiary[50],
+  },
+  pickerGlyphSelected: {
+    borderWidth: 2,
+    borderColor: theme.primary[400],
+    backgroundColor: "#FFF2F4",
+  },
+  pickerEmoji: { fontSize: 23 },
 });

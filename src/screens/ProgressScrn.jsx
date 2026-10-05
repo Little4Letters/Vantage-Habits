@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Svg, { Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText as Text } from "../components/Typography.js";
+import HabitGlyph from "../components/HabitGlyph.js";
 import { palette as theme } from "../theme.js";
 
 const periods = ["Today", "This Week", "This Month"];
@@ -204,8 +205,9 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
             >
               <View style={styles.progressTopRow}>
                 <View style={styles.progressIcon}>
-                  <Ionicons
-                    name={habit.icon || "sparkles-outline"}
+                  <HabitGlyph
+                    icon={habit.icon || "sparkles-outline"}
+                    iconType={habit.iconType}
                     size={21}
                     color={habit.color || "#4388F5"}
                   />

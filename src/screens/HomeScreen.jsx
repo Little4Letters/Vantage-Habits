@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HabitSec from "../components/HabitsSec.js";
@@ -90,9 +96,18 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
             </Text>
           </View>
           <View style={styles.headerActions}>
-            <View style={styles.brandMark}>
-              <Ionicons name="checkmark-done" size={23} color="#E56B78" />
-            </View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+              onPress={() => navigation.navigate("Profile")}
+              style={styles.brandMark}
+            >
+              <Image
+                source={require("../../assets/Vantage Habits Logo.png")}
+                resizeMode="contain"
+                style={styles.brandImage}
+              />
+            </TouchableOpacity>
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Toggle full calendar"
@@ -293,11 +308,15 @@ const styles = StyleSheet.create({
   weather: { fontSize: 13, color: theme.natural[500], marginTop: 6 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   brandMark: {
-    width: 34,
-    height: 34,
+    width: 58,
+    height: 42,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+    borderRadius: 8,
+    backgroundColor: theme.white,
   },
+  brandImage: { width: "100%", height: "100%" },
   calendarButton: {
     width: 42,
     height: 42,
