@@ -1,1 +1,1 @@
-Vantage-Habits
+Vanta ge-Habits
