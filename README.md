@@ -1,1 +1,1 @@
-Vantage-Habitd
+Vantage-Habits
