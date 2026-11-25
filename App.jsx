@@ -7,6 +7,7 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  Text,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationContainer } from "@react-navigation/native";
@@ -170,12 +171,18 @@ function HabitTabs() {
     }));
   });
   const [habitsLoaded, setHabitsLoaded] = useState(false);
+  const [isLoadingHabits, setIsLoadingHabits] = useState(true);
+  const [habitsLoadError, setHabitsLoadError] = useState(null);
+  const [habitsLoadAttempt, setHabitsLoadAttempt] = useState(0);
 
   // Priority 1: read the saved JSON array once when the habit tab owner mounts.
   useEffect(() => {
     let isMounted = true;
 
     const loadHabits = async () => {
+      setIsLoadingHabits(true);
+      setHabitsLoadError(null);
+
       try {
         const storedHabits = await AsyncStorage.getItem(HABITS_STORAGE_KEY);
 
@@ -188,8 +195,16 @@ function HabitTabs() {
         }
       } catch (error) {
         console.warn("Could not load saved habits:", error);
+        if (isMounted) {
+          setHabitsLoadError(
+            "Could not load your saved habits. Please try again.",
+          );
+        }
       } finally {
-        if (isMounted) setHabitsLoaded(true);
+        if (isMounted) {
+          setIsLoadingHabits(false);
+          setHabitsLoaded(true);
+        }
       }
     };
 
@@ -197,7 +212,7 @@ function HabitTabs() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [habitsLoadAttempt]);
 
   // Priority 1: persist the lifted habit state after create, update, delete,
   // or completion changes. JSON.stringify converts the array to storage text.
@@ -246,6 +261,32 @@ function HabitTabs() {
     );
   const deleteHabit = (habitId) =>
     setHabits((current) => current.filter((habit) => habit.id !== habitId));
+
+  // Loading state: keep the app from rendering an incomplete habit dataset.
+  if (isLoadingHabits) {
+    return (
+      <View style={styles.storageStateContainer}>
+        <ActivityIndicator size="large" color={theme.primary[600]} />
+        <Text style={styles.storageStateText}>Loading your habits...</Text>
+      </View>
+    );
+  }
+
+  // Error state: allow the user to retry the AsyncStorage read.
+  if (habitsLoadError) {
+    return (
+      <View style={styles.storageStateContainer}>
+        <Text style={styles.storageErrorText}>{habitsLoadError}</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={() => setHabitsLoadAttempt((attempt) => attempt + 1)}
+          style={styles.storageRetryButton}
+        >
+          <Text style={styles.storageRetryText}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <Tab.Navigator
@@ -328,6 +369,35 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  storageStateContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    backgroundColor: theme.natural[50],
+  },
+  storageStateText: {
+    marginTop: 12,
+    color: theme.tertiary[800],
+    fontSize: 16,
+  },
+  storageErrorText: {
+    textAlign: "center",
+    color: theme.tertiary[900],
+    fontSize: 16,
+  },
+  storageRetryButton: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: theme.primary[600],
+  },
+  storageRetryText: {
+    color: theme.white,
+    fontSize: 15,
+    fontWeight: "700",
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
