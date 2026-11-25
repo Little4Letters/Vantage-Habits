@@ -1,7 +1,6 @@
 // Module: Diri malabtan
 
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -44,55 +43,9 @@ import ProfileScreen from "./src/screens/ProfileScrn.jsx";
 import LoginScreen from "./src/screens/LoginScreen.tsx";
 import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
 import { palette as theme } from "./src/theme.js";
+import { useHabits } from "./src/hooks/useHabits";
 
 const Tab = createBottomTabNavigator();
-
-// The startingHabits array defines a set of initial habits for the app,
-// each with properties such as id, title, frequency, color, icon, and completed status.
-
-// This array is used to initialize the state of habits in the HabitTabs component.
-const startingHabits = [
-  {
-    id: "jogging",
-    title: "Jogging",
-    frequency: "Every day",
-    color: "#4388F5",
-    icon: "walk-outline",
-    completed: false,
-  },
-  {
-    id: "tennis",
-    title: "Sports",
-    frequency: "Monday, Thursday",
-    color: "#F58D60",
-    icon: "tennisball-outline",
-    completed: false,
-  },
-  {
-    id: "sleep",
-    title: "8 Hour Sleep",
-    frequency: "Every day",
-    color: "#9660E8",
-    icon: "bed-outline",
-    completed: false,
-  },
-  {
-    id: "reading",
-    title: "Read 10 pages",
-    frequency: "Every day",
-    color: "#47B9A7",
-    icon: "book-outline",
-    completed: true,
-  },
-];
-
-//
-function getDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
 
 const tabIcons = {
   Home: ["home-outline", "home"],
@@ -160,107 +113,17 @@ function CustomTabBar({ state, navigation }) {
   );
 }
 
-const HABITS_STORAGE_KEY = "@vantage-habits/habits";
-
 function HabitTabs() {
-  const [habits, setHabits] = useState(() => {
-    const today = getDateKey();
-    return startingHabits.map((habit) => ({
-      ...habit,
-      completedDates: habit.completed ? [today] : [],
-    }));
-  });
-  const [habitsLoaded, setHabitsLoaded] = useState(false);
-  const [isLoadingHabits, setIsLoadingHabits] = useState(true);
-  const [habitsLoadError, setHabitsLoadError] = useState(null);
-  const [habitsLoadAttempt, setHabitsLoadAttempt] = useState(0);
-
-  // Priority 1: read the saved JSON array once when the habit tab owner mounts.
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadHabits = async () => {
-      setIsLoadingHabits(true);
-      setHabitsLoadError(null);
-
-      try {
-        const storedHabits = await AsyncStorage.getItem(HABITS_STORAGE_KEY);
-
-        // AsyncStorage returns text, so stored JSON must be parsed before use.
-        if (isMounted && storedHabits) {
-          const parsedHabits = JSON.parse(storedHabits);
-          if (Array.isArray(parsedHabits)) {
-            setHabits(parsedHabits);
-          }
-        }
-      } catch (error) {
-        console.warn("Could not load saved habits:", error);
-        if (isMounted) {
-          setHabitsLoadError(
-            "Could not load your saved habits. Please try again.",
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingHabits(false);
-          setHabitsLoaded(true);
-        }
-      }
-    };
-
-    loadHabits();
-    return () => {
-      isMounted = false;
-    };
-  }, [habitsLoadAttempt]);
-
-  // Priority 1: persist the lifted habit state after create, update, delete,
-  // or completion changes. JSON.stringify converts the array to storage text.
-  useEffect(() => {
-    if (!habitsLoaded) return;
-
-    const saveHabits = async () => {
-      try {
-        await AsyncStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
-      } catch (error) {
-        console.warn("Could not save habits:", error);
-      }
-    };
-
-    saveHabits();
-  }, [habits, habitsLoaded]);
-  const toggleHabit = (habitId, date = getDateKey()) => {
-    setHabits((current) =>
-      current.map((habit) =>
-        habit.id !== habitId
-          ? habit
-          : (() => {
-              const completedDates = habit.completedDates || [];
-              const isCompleted = completedDates.includes(date);
-              const nextDates = isCompleted
-                ? completedDates.filter(
-                    (completedDate) => completedDate !== date,
-                  )
-                : [...completedDates, date];
-              return {
-                ...habit,
-                completedDates: nextDates,
-                completed:
-                  date === getDateKey() ? !isCompleted : habit.completed,
-              };
-            })(),
-      ),
-    );
-  };
-  const addHabit = (habit) => setHabits((current) => [...current, habit]);
-  const updateHabit = (updatedHabit) =>
-    setHabits((current) =>
-      current.map((habit) =>
-        habit.id === updatedHabit.id ? { ...habit, ...updatedHabit } : habit,
-      ),
-    );
-  const deleteHabit = (habitId) =>
-    setHabits((current) => current.filter((habit) => habit.id !== habitId));
+  const {
+    habits,
+    isLoadingHabits,
+    habitsLoadError,
+    retryLoading,
+    toggleHabit,
+    addHabit,
+    updateHabit,
+    deleteHabit,
+  } = useHabits();
 
   // Loading state: keep the app from rendering an incomplete habit dataset.
   if (isLoadingHabits) {
@@ -279,7 +142,7 @@ function HabitTabs() {
         <Text style={styles.storageErrorText}>{habitsLoadError}</Text>
         <TouchableOpacity
           accessibilityRole="button"
-          onPress={() => setHabitsLoadAttempt((attempt) => attempt + 1)}
+          onPress={retryLoading}
           style={styles.storageRetryButton}
         >
           <Text style={styles.storageRetryText}>Try Again</Text>
