@@ -13,6 +13,7 @@ export default function HabitCard({
   isCompleted,
   onPress,
 }) {
+  // Manages the rendering of a habit card, which displays the habit's title, frequency, and an icon or emoji. It also includes a checkbox to mark the habit as completed or not. The component accepts props for customization, including title, frequency, color, icon, iconType, isCompleted status, and an onPress handler for the checkbox.
   return (
     <View
       style={[

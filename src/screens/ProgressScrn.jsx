@@ -16,6 +16,10 @@ function getDateKey(date) {
   return `${year}-${month}-${day}`;
 }
 
+// This function generates an array of date keys based on the selected period
+// (Today, This Week, or This Month) and the current date.
+
+// It returns an array of strings in the format "YYYY-MM-DD" for each relevant date within the specified period.
 function getPeriodDateKeys(period, today) {
   if (period === "Today") return [getDateKey(today)];
 
@@ -45,6 +49,7 @@ function isHabitCompletedOn(habit, dateKey, todayKey) {
   );
 }
 
+// Percentage of completed checks over total checks, rounded to the nearest whole number. If there are no total checks, the score defaults to 0.
 function getCurrentStreak(habit, today) {
   const completedDates = new Set(habit.completedDates || []);
   if (habit.completed) completedDates.add(getDateKey(today));
@@ -72,6 +77,8 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
       ).length,
     0,
   );
+  // Computation of the score as a percentage of completed checks over total checks,
+  // rounded to the nearest whole number. If there are no total checks, the score defaults to 0.
   const score = totalChecks
     ? Math.round((completedChecks / totalChecks) * 100)
     : 0;

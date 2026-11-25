@@ -84,7 +84,7 @@ export default function HomeScreen({ navigation, habits, onToggleHabit }) {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>
-              Good <Text style={styles.greetingHighlight}>Afternoon</Text>
+              Good <Text style={styles.greetingHighlight}>Morning</Text>
             </Text>
             <Text style={styles.weather}>
               <Ionicons

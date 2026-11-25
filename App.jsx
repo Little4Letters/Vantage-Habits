@@ -1,4 +1,7 @@
-import { useState } from "react";
+// Module: Diri malabtan
+
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   StyleSheet,
   View,
@@ -8,6 +11,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
+// SafeAreaProvider is a component that provides safe area insets to its children,
+// Ensuring that content is not obscured by device notches or other screen elements.
+// The useSafeAreaInsets hook allows components to access the safe area insets for layout adjustments.
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -15,7 +22,8 @@ import {
 import { StatusBar } from "expo-status-bar";
 
 // The following imports presented here as App.jsx is the main entry point of the app and,
-// It imports various components and screens from the src directory. The code also includes a custom tab bar for navigation between different screens in the app.
+// It imports various components and screens from the src directory.
+// The code also includes a custom tab bar for navigation between different screens in the app.
 
 import {
   useFonts,
@@ -26,6 +34,7 @@ import {
   NunitoSans_800ExtraBold,
 } from "@expo-google-fonts/nunito-sans";
 
+// Paging
 import HomeScreen from "./src/screens/HomeScreen.jsx";
 import AddHabitScrn from "./src/screens/AddHabitScrn.jsx";
 import ProgressScreen from "./src/screens/ProgressScrn.jsx";
@@ -37,6 +46,10 @@ import { palette as theme } from "./src/theme.js";
 
 const Tab = createBottomTabNavigator();
 
+// The startingHabits array defines a set of initial habits for the app,
+// each with properties such as id, title, frequency, color, icon, and completed status.
+
+// This array is used to initialize the state of habits in the HabitTabs component.
 const startingHabits = [
   {
     id: "jogging",
@@ -72,6 +85,7 @@ const startingHabits = [
   },
 ];
 
+//
 function getDateKey(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -87,6 +101,7 @@ const tabIcons = {
   Profile: ["person-outline", "person"],
 };
 
+//
 function CustomTabBar({ state, navigation }) {
   const insets = useSafeAreaInsets();
 
@@ -144,6 +159,8 @@ function CustomTabBar({ state, navigation }) {
   );
 }
 
+const HABITS_STORAGE_KEY = "@vantage-habits/habits";
+
 function HabitTabs() {
   const [habits, setHabits] = useState(() => {
     const today = getDateKey();
@@ -152,6 +169,51 @@ function HabitTabs() {
       completedDates: habit.completed ? [today] : [],
     }));
   });
+  const [habitsLoaded, setHabitsLoaded] = useState(false);
+
+  // Priority 1: read the saved JSON array once when the habit tab owner mounts.
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHabits = async () => {
+      try {
+        const storedHabits = await AsyncStorage.getItem(HABITS_STORAGE_KEY);
+
+        // AsyncStorage returns text, so stored JSON must be parsed before use.
+        if (isMounted && storedHabits) {
+          const parsedHabits = JSON.parse(storedHabits);
+          if (Array.isArray(parsedHabits)) {
+            setHabits(parsedHabits);
+          }
+        }
+      } catch (error) {
+        console.warn("Could not load saved habits:", error);
+      } finally {
+        if (isMounted) setHabitsLoaded(true);
+      }
+    };
+
+    loadHabits();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Priority 1: persist the lifted habit state after create, update, delete,
+  // or completion changes. JSON.stringify converts the array to storage text.
+  useEffect(() => {
+    if (!habitsLoaded) return;
+
+    const saveHabits = async () => {
+      try {
+        await AsyncStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
+      } catch (error) {
+        console.warn("Could not save habits:", error);
+      }
+    };
+
+    saveHabits();
+  }, [habits, habitsLoaded]);
   const toggleHabit = (habitId, date = getDateKey()) => {
     setHabits((current) =>
       current.map((habit) =>

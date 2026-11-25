@@ -40,6 +40,7 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
     );
   };
 
+  // For preview purposes only kay waray back end pa; using this function
   const previewLogin = () => {
     Alert.alert(
       "Preview only",
@@ -189,7 +190,7 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Continue with Facebook"
+                  accessibilityLabel="Continue with Facebook"  
                   onPress={() => showPreviewMessage("Facebook login")}
                   style={styles.socialButton}
                 >

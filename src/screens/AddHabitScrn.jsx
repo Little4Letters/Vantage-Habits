@@ -461,6 +461,8 @@ export default function AddHabitScrn({
                     </TouchableOpacity>
                   ))}
                 </View>
+
+                {/* Day Selection Panel */}
                 <View style={styles.dayRow}>
                   {days.map((day) => (
                     <TouchableOpacity
@@ -489,6 +491,7 @@ export default function AddHabitScrn({
                 </View>
               </View>
 
+              {/* Duration Panel */}
               <View style={[styles.formPanel, styles.durationPanel]}>
                 <View style={styles.durationHeading}>
                   <View style={styles.dateIcon}>
@@ -527,6 +530,7 @@ export default function AddHabitScrn({
                 </View>
               </View>
 
+              {/* Update Button */}
               <TouchableOpacity
                 accessibilityRole="button"
                 onPress={saveHabit}
@@ -550,6 +554,7 @@ export default function AddHabitScrn({
                       { backgroundColor: habit.color || colors[0] },
                     ]}
                   >
+                    {/* Edit Button */}
                     <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={`Edit ${habit.title}`}
@@ -578,6 +583,8 @@ export default function AddHabitScrn({
                         color="#FFFFFF"
                       />
                     </TouchableOpacity>
+
+                    {/* Delete Button */}
                     <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={`Delete ${habit.title}`}
@@ -605,6 +612,8 @@ export default function AddHabitScrn({
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Icon Picker */}
       {iconPickerOpen && (
         <View style={styles.iconPickerOverlay}>
           <TouchableOpacity
@@ -613,6 +622,8 @@ export default function AddHabitScrn({
             onPress={() => setIconPickerOpen(false)}
             style={styles.iconPickerBackdrop}
           />
+
+          {/* Icon Picker Sheet */}
           <View style={styles.iconPickerSheet}>
             <View style={styles.pickerHeading}>
               <View>
@@ -631,6 +642,7 @@ export default function AddHabitScrn({
               </TouchableOpacity>
             </View>
 
+            {/* Tab Navigation */}
             <View style={styles.pickerTabs}>
               {[
                 { key: "icons", label: "Icons" },
@@ -686,6 +698,7 @@ export default function AddHabitScrn({
                             styles.pickerGlyphSelected,
                         ]}
                       >
+                        {/* Icon Option */}
                         <Ionicons name={option} size={21} color={color} />
                       </View>
                     </TouchableOpacity>
@@ -725,6 +738,7 @@ export default function AddHabitScrn({
   );
 }
 
+// Styles la ini sir!
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#F4F5F8" },
   keyboardView: { flex: 1 },

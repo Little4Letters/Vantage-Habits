@@ -8,6 +8,7 @@ import {
 } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
 
+// Export default function ProfileScreen() {
 export default function ProfileScreen() {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("Habit Builder");
@@ -15,6 +16,11 @@ export default function ProfileScreen() {
   const [gender, setGender] = useState("Male");
   const [birthDate, setBirthDate] = useState("12 / 05 / 1996");
   const [activeAction, setActiveAction] = useState("");
+
+  // The ProfileScreen component manages the user's profile information, allowing them to view and edit their account details.
+  // It includes state variables for editing mode, name, email, gender, birth date, and active action. The component renders a profile banner, a list of menu items for various actions, and an editing form when in editing mode.
+
+  // The user can update their information and select gender and birth date through interactive elements.
   const menuItems = [
     { icon: "share-social-outline", title: "Share This App" },
     { icon: "star-outline", title: "Rate Us 5 Star" },
@@ -26,6 +32,8 @@ export default function ProfileScreen() {
     { icon: "log-out-outline", title: "Logout" },
   ];
 
+  // What is return? This is the main rendering of the ProfileScreen component.
+  // It returns a SafeAreaView that contains a ScrollView. Inside the ScrollView, it conditionally renders either the editing form or the profile view based on the editing state. The profile view includes a banner with user information and a list of menu items for various actions. The editing form allows users to update their name, email, gender, and birth date, with appropriate input fields and buttons for saving changes.
   return (
     <SafeAreaView
       style={[styles.safeArea, !editing && styles.profileSafeArea]}
@@ -35,19 +43,24 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.screenContent}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Editing Form */}
         {editing ? (
           <View>
+            {/* Edit Heading */}
             <TouchableOpacity
               accessibilityRole="button"
               onPress={() => setEditing(false)}
               style={styles.editHeading}
             >
+              {/* Back Button */}
               <View style={styles.editBack}>
                 <Ionicons
                   name="chevron-back"
                   size={18}
                   color={theme.tertiary[800]}
                 />
+
+                {/* Edit Title paragraph sa Heading ini */}
               </View>
               <View style={styles.editHeadingCopy}>
                 <Text style={styles.editTitle}>Edit Account</Text>
@@ -197,6 +210,8 @@ export default function ProfileScreen() {
   );
 }
 
+// Syling for the ProfileScreen component
+// Defining the layout and appearance of various elements such as the safe area, profile banner, menu items, input fields, and buttons.
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: theme.natural[50] },
   profileSafeArea: { backgroundColor: "#FF637D" },
