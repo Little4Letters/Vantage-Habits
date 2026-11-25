@@ -221,10 +221,7 @@ export default function App() {
             onEnterApp={() => setEntryScreen("app")}
           />
         ) : (
-          <OnboardingScreen
-            onLogin={() => setEntryScreen("login")}
-            onEnterApp={() => setEntryScreen("app")}
-          />
+          <OnboardingScreen onLogin={() => setEntryScreen("login")} />
         )}
       </NavigationContainer>
     </SafeAreaProvider>

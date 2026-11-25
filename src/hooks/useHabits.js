@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { loadStoredHabits, saveStoredHabits } from "../services/habitStorage";
+import {
+  loadStoredHabits,
+  saveStoredHabits,
+  loadStoredCompletionHistory,
+  saveStoredCompletionHistory,
+} from "../services/habitStorage";
 
 export const startingHabits = [
   {
@@ -55,6 +60,7 @@ export function useHabits() {
   const [isLoadingHabits, setIsLoadingHabits] = useState(true);
   const [habitsLoadError, setHabitsLoadError] = useState(null);
   const [habitsLoadAttempt, setHabitsLoadAttempt] = useState(0);
+  const [completionHistory, setCompletionHistory] = useState([]);
 
   // useEffect loads saved habits once, or again when Retry is pressed.
   useEffect(() => {
@@ -65,10 +71,37 @@ export function useHabits() {
       setHabitsLoadError(null);
 
       try {
-        const loadedHabits = await loadStoredHabits();
+        const [loadedHabits, loadedHistory] = await Promise.all([
+          loadStoredHabits(),
+          loadStoredCompletionHistory(),
+        ]);
 
         if (isMounted && loadedHabits) {
-          setHabits(loadedHabits);
+          const normalizedHabits = loadedHabits.map((habit) => ({
+            ...habit,
+            completed: Boolean(habit.completed),
+            completedDates: habit.completedDates || [],
+          }));
+          setHabits(normalizedHabits);
+
+          const derivedHistory = normalizedHabits.flatMap((habit) =>
+            (habit.completedDates || []).map((date) => ({
+              id: `${habit.id}:${date}`,
+              habitId: habit.id,
+              date,
+              completedAt: new Date().toISOString(),
+            })),
+          );
+
+          const historyById = new Map(
+            [...loadedHistory, ...derivedHistory].map((entry) => [
+              entry.id,
+              entry,
+            ]),
+          );
+          setCompletionHistory(Array.from(historyById.values()));
+        } else if (isMounted) {
+          setCompletionHistory(loadedHistory);
         }
       } catch (error) {
         console.warn("Could not load saved habits:", error);
@@ -97,14 +130,17 @@ export function useHabits() {
 
     const saveHabits = async () => {
       try {
-        await saveStoredHabits(habits);
+        await Promise.all([
+          saveStoredHabits(habits),
+          saveStoredCompletionHistory(completionHistory),
+        ]);
       } catch (error) {
         console.warn("Could not save habits:", error);
       }
     };
 
     saveHabits();
-  }, [habits, habitsLoaded]);
+  }, [habits, completionHistory, habitsLoaded]);
 
   const toggleHabit = (habitId, date = getDateKey()) => {
     setHabits((current) =>
@@ -120,6 +156,21 @@ export function useHabits() {
                   )
                 : [...completedDates, date];
 
+              setCompletionHistory((history) => {
+                const entryId = `${habitId}:${date}`;
+                return isCompleted
+                  ? history.filter((entry) => entry.id !== entryId)
+                  : [
+                      ...history.filter((entry) => entry.id !== entryId),
+                      {
+                        id: entryId,
+                        habitId,
+                        date,
+                        completedAt: new Date().toISOString(),
+                      },
+                    ];
+              });
+
               return {
                 ...habit,
                 completedDates: nextDates,
@@ -131,7 +182,15 @@ export function useHabits() {
     );
   };
 
-  const addHabit = (habit) => setHabits((current) => [...current, habit]);
+  const addHabit = (habit) =>
+    setHabits((current) => [
+      ...current,
+      {
+        ...habit,
+        completed: false,
+        completedDates: habit.completedDates || [],
+      },
+    ]);
 
   const updateHabit = (updatedHabit) =>
     setHabits((current) =>
@@ -140,8 +199,12 @@ export function useHabits() {
       ),
     );
 
-  const deleteHabit = (habitId) =>
+  const deleteHabit = (habitId) => {
     setHabits((current) => current.filter((habit) => habit.id !== habitId));
+    setCompletionHistory((history) =>
+      history.filter((entry) => entry.habitId !== habitId),
+    );
+  };
 
   const retryLoading = () => {
     setHabitsLoadAttempt((attempt) => attempt + 1);
@@ -156,5 +219,6 @@ export function useHabits() {
     addHabit,
     updateHabit,
     deleteHabit,
+    completionHistory,
   };
 }

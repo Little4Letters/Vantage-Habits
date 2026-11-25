@@ -190,7 +190,7 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Continue with Facebook"  
+                  accessibilityLabel="Continue with Facebook"
                   onPress={() => showPreviewMessage("Facebook login")}
                   style={styles.socialButton}
                 >
@@ -211,13 +211,6 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
                   <Text style={styles.createText}>Create Now</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={onEnterApp}
-                style={styles.skipButton}
-              >
-                <Text style={styles.skipText}>Skip Login</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -357,11 +350,5 @@ const styles = StyleSheet.create({
     color: colors.coral,
     fontFamily: "NunitoSans_700Bold",
     fontSize: 12,
-  },
-  skipButton: { paddingVertical: 15, paddingHorizontal: 16 },
-  skipText: {
-    color: colors.coral,
-    fontFamily: "NunitoSans_700Bold",
-    fontSize: 13,
   },
 });

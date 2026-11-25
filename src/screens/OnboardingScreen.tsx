@@ -12,13 +12,9 @@ import { palette as theme } from "../theme.js";
 
 type OnboardingScreenProps = {
   onLogin: () => void;
-  onEnterApp: () => void;
 };
 
-export default function OnboardingScreen({
-  onLogin,
-  onEnterApp,
-}: OnboardingScreenProps) {
+export default function OnboardingScreen({ onLogin }: OnboardingScreenProps) {
   const showCreateAccountNotice = () => {
     Alert.alert(
       "Front-end preview",
@@ -78,13 +74,6 @@ export default function OnboardingScreen({
               style={styles.createButton}
             >
               <Text style={styles.createButtonText}>Create new account</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              accessibilityRole="button"
-              onPress={onEnterApp}
-              style={styles.skipButton}
-            >
-              <Text style={styles.skipButtonText}>Skip Login</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -224,11 +213,5 @@ const styles = StyleSheet.create({
     color: theme.tertiary[900],
     fontFamily: "NunitoSans_700Bold",
     fontSize: 13,
-  },
-  skipButton: { paddingHorizontal: 16, paddingVertical: 11 },
-  skipButtonText: {
-    color: theme.primary[400],
-    fontFamily: "NunitoSans_700Bold",
-    fontSize: 12,
   },
 });
