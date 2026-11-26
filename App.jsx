@@ -161,6 +161,7 @@ function HabitTabs({ profile, onUpdateProfile, onLogout }) {
     );
   }
 
+  // Storage is loaded and ready: render the main app with the bottom tab navigator.
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
