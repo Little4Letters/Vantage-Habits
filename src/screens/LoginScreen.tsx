@@ -180,8 +180,8 @@ export default function LoginScreen({
         message.toLowerCase().includes("native module")
       ) {
         Alert.alert(
-          "Secure storage unavailable",
-          "Account setup could not access protected device storage. Restart the app and try again.",
+          "Device storage unavailable",
+          "Vantage Habits could not save account data on this device. Restart the app and try again. If this continues in a development build, rebuild the app so its native storage modules are included.",
         );
       } else {
         Alert.alert(

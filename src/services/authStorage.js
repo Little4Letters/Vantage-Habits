@@ -20,22 +20,55 @@ const ACCOUNT_KEY = "@vantage-habits/account";
 const ACCOUNTS_KEY = "@vantage-habits/accounts";
 const SESSION_KEY = "@vantage-habits/session";
 const PROFILE_KEY = "@vantage-habits/profile";
+const ACCOUNT_STORAGE_FALLBACK_KEY = "@vantage-habits/account-storage-fallback";
+
+async function setAsyncStorageFallback() {
+  await AsyncStorage.setItem(ACCOUNT_STORAGE_FALLBACK_KEY, "1");
+  return AsyncStorage;
+}
 
 async function getAccountStorage() {
   if (Platform.OS === "web") return AsyncStorage;
 
+  if (
+    (await AsyncStorage.getItem(ACCOUNT_STORAGE_FALLBACK_KEY)) === "1"
+  ) {
+    return AsyncStorage;
+  }
+
+  const existingAsyncAccounts = await AsyncStorage.multiGet([
+    ACCOUNTS_KEY,
+    ACCOUNT_KEY,
+  ]);
+  if (existingAsyncAccounts.some(([, value]) => value !== null)) {
+    return setAsyncStorageFallback();
+  }
+
   try {
     if (await SecureStore.isAvailableAsync()) return SecureStore;
-  } catch {
-    // Fall back to AsyncStorage when native secure storage is unavailable.
+  } catch (error) {
+    console.warn(
+      "SecureStore availability check failed; using AsyncStorage for account data.",
+      error,
+    );
+    return setAsyncStorageFallback();
   }
-  return AsyncStorage;
+  return setAsyncStorageFallback();
 }
 
 async function getStoredValue(key) {
   const accountStorage = await getAccountStorage();
   if (accountStorage === SecureStore) {
-    return accountStorage.getItemAsync(key);
+    try {
+      return await accountStorage.getItemAsync(key);
+    } catch (error) {
+      console.warn(
+        "SecureStore read failed; using AsyncStorage for account data.",
+        error,
+      );
+      const fallbackStorage = await setAsyncStorageFallback();
+      return fallbackStorage.getItem(key);
+    }
   }
   return accountStorage.getItem(key);
 }
@@ -43,7 +76,17 @@ async function getStoredValue(key) {
 async function setStoredValue(key, value) {
   const accountStorage = await getAccountStorage();
   if (accountStorage === SecureStore) {
-    await accountStorage.setItemAsync(key, value);
+    try {
+      await accountStorage.setItemAsync(key, value);
+      return;
+    } catch (error) {
+      console.warn(
+        "SecureStore write failed; using AsyncStorage for account data.",
+        error,
+      );
+      const fallbackStorage = await setAsyncStorageFallback();
+      await fallbackStorage.setItem(key, value);
+    }
     return;
   }
   await accountStorage.setItem(key, value);
