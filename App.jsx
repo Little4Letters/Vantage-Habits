@@ -106,7 +106,14 @@ function CustomTabBar({ state, navigation }) {
   );
 }
 
-function HabitTabs({ accountId, profile, onUpdateProfile, onLogout }) {
+function HabitTabs({
+  accountId,
+  accountName,
+  profile,
+  isNewAccount,
+  onUpdateProfile,
+  onLogout,
+}) {
   const {
     habits,
     isLoadingHabits,
@@ -156,6 +163,9 @@ function HabitTabs({ accountId, profile, onUpdateProfile, onLogout }) {
           <HomeScreen
             {...props}
             accountId={accountId}
+            accountName={accountName}
+            profile={profile}
+            isNewAccount={isNewAccount}
             habits={habits}
             onToggleHabit={toggleHabit}
           />
@@ -211,6 +221,7 @@ export default function App() {
   });
   const [entryScreen, setEntryScreen] = useState("onboarding");
   const [loginMode, setLoginMode] = useState("login");
+  const [isNewAccount, setIsNewAccount] = useState(false);
   const {
     account,
     profile,
@@ -236,10 +247,13 @@ export default function App() {
         {account ? (
           <HabitTabs
             accountId={account.id}
+            accountName={account.name}
             profile={profile}
+            isNewAccount={isNewAccount}
             onUpdateProfile={updateProfile}
             onLogout={async () => {
               await logout();
+              setIsNewAccount(false);
               setEntryScreen("onboarding");
             }}
           />
@@ -249,9 +263,11 @@ export default function App() {
             onBack={() => setEntryScreen("onboarding")}
             onLogin={async (email, password) => {
               await login(email, password);
+              setIsNewAccount(false);
             }}
             onRegister={async (details) => {
               await register(details);
+              setIsNewAccount(true);
             }}
           />
         ) : (

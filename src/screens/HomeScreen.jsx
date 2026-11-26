@@ -80,6 +80,9 @@ export default function HomeScreen({
   habits,
   onToggleHabit,
   accountId,
+  accountName,
+  profile,
+  isNewAccount = false,
 }) {
   // This function is used to get the dates of the current week starting from Monday.
   // It creates an array of 7 objects only para ma follow as a week concept
@@ -98,6 +101,16 @@ export default function HomeScreen({
     (habit) => !isCompletedOnSelectedDate(habit),
   );
   const completedHabits = habits.filter(isCompletedOnSelectedDate);
+  const firstName = String(profile?.name || accountName || "")
+    .trim()
+    .split(/\s+/)[0];
+  const currentHour = new Date().getHours();
+  const timeGreeting =
+    currentHour < 12
+      ? "Good morning"
+      : currentHour < 17
+        ? "Good afternoon"
+        : "Good evening";
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -113,15 +126,21 @@ export default function HomeScreen({
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>
-              Good <Text style={styles.greetingHighlight}>Morning</Text>
+              {timeGreeting}
+              {firstName ? (
+                <>
+                  {", "}
+                  <Text style={styles.greetingHighlight}>{firstName}</Text>
+                  !
+                </>
+              ) : (
+                "!"
+              )}
             </Text>
-            <Text style={styles.weather}>
-              <Ionicons
-                name="partly-sunny"
-                size={15}
-                color={theme.secondary[500]}
-              />{" "}
-              32 °C
+            <Text style={styles.headerMessage}>
+              {isNewAccount
+                ? "Welcome to Vantage Habits!"
+                : "You're Back! Ready for today?"}
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -334,7 +353,7 @@ const styles = StyleSheet.create({
   },
   greeting: { fontSize: 22, fontWeight: "800", color: theme.tertiary[900] },
   greetingHighlight: { color: theme.primary[400], fontWeight: "800" },
-  weather: { fontSize: 13, color: theme.natural[500], marginTop: 6 },
+  headerMessage: { fontSize: 13, color: theme.natural[500], marginTop: 6 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   brandMark: {
     width: 58,
