@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -110,7 +111,12 @@ export default function LoginScreen({
               <Ionicons name="chevron-back" size={20} color={colors.ink} />
             </TouchableOpacity>
             <View style={styles.brandMark}>
-              <Ionicons name="checkmark-done" size={25} color={colors.coral} />
+              <Image
+                accessibilityLabel="Vantage Habits"
+                resizeMode="contain"
+                source={require("../../assets/vantage-habits-symbol.png")}
+                style={styles.brandImage}
+              />
             </View>
 
             <View style={styles.header}>
@@ -232,7 +238,12 @@ export default function LoginScreen({
               {mode === "login" && (
                 <TouchableOpacity
                   accessibilityRole="button"
-                  onPress={() => Alert.alert("Password recovery", "Password recovery requires a server-backed account service.")}
+                  onPress={() =>
+                    Alert.alert(
+                      "Password recovery",
+                      "Password recovery requires a server-backed account service.",
+                    )
+                  }
                   style={styles.forgotButton}
                 >
                   <Text style={styles.forgotText}>Forgot Password?</Text>
@@ -335,14 +346,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.field,
   },
   brandMark: {
-    width: 48,
-    height: 48,
+    width: 76,
+    height: 76,
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "center",
-    borderRadius: 16,
-    backgroundColor: "#FFF2F4",
-    marginBottom: 22,
+    marginBottom: 18,
+  },
+  brandImage: {
+    width: 72,
+    height: 72,
   },
   header: { alignItems: "center", marginBottom: 32 },
   title: {
