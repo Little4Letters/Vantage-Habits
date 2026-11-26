@@ -57,17 +57,60 @@ export default function LoginScreen({
   };
 
   const submitAuth = async () => {
-    if (!email.trim() || !password) {
-      Alert.alert("Missing details", "Enter your email and password.");
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !password) {
+      Alert.alert("Required details", "Enter your email and password.");
       return;
     }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      Alert.alert(
+        "Invalid email format",
+        "Enter a complete email address, such as name@example.com.",
+      );
+      return;
+    }
+
     if (mode === "register") {
-      if (!name.trim()) {
-        Alert.alert("Missing name", "Enter your name.");
+      if (!trimmedName) {
+        Alert.alert(
+          "Name required",
+          "Enter the name you want on your account.",
+        );
+        return;
+      }
+      if (trimmedName.length < 2 || trimmedName.length > 40) {
+        Alert.alert("Invalid name", "Use a name between 2 and 40 characters.");
+        return;
+      }
+      if (!/^[\p{L}][\p{L}\p{M}' .-]*$/u.test(trimmedName)) {
+        Alert.alert(
+          "Invalid name",
+          "Use letters for your name. Symbols and numbers are not allowed.",
+        );
+        return;
+      }
+      if (password.length < 8) {
+        Alert.alert(
+          "Weak password",
+          "Use at least 8 characters, including an uppercase letter and a number.",
+        );
+        return;
+      }
+      if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        Alert.alert(
+          "Weak password",
+          "Include at least one uppercase letter and one number.",
+        );
         return;
       }
       if (password !== confirmPassword) {
-        Alert.alert("Password mismatch", "Both passwords must match.");
+        Alert.alert(
+          "Passwords do not match",
+          "Re-enter the same password in both password fields.",
+        );
         return;
       }
     }
@@ -75,15 +118,38 @@ export default function LoginScreen({
     setIsSubmitting(true);
     try {
       if (mode === "register") {
-        await onRegister({ name: name.trim(), email, password });
+        await onRegister({
+          name: trimmedName,
+          email: trimmedEmail,
+          password,
+        });
       } else {
-        await onLogin(email, password);
+        await onLogin(trimmedEmail, password);
       }
     } catch (error) {
-      Alert.alert(
-        mode === "register" ? "Account creation failed" : "Login failed",
-        error instanceof Error ? error.message : "Please try again.",
-      );
+      const message = error instanceof Error ? error.message : "";
+
+      if (message.includes("An account already exists")) {
+        Alert.alert(
+          "Account already set up",
+          "This device already has a Vantage Habits account. Log in or continue with the existing account.",
+        );
+      } else if (
+        message.includes("No account exists") ||
+        message.includes("Incorrect email or password")
+      ) {
+        Alert.alert(
+          "Unable to log in",
+          "The email or password could not be verified. Check both details and try again.",
+        );
+      } else {
+        Alert.alert(
+          mode === "register"
+            ? "Account setup unsuccessful"
+            : "Login unsuccessful",
+          "Your details could not be verified securely. Check them and try again.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }

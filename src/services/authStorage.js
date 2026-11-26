@@ -45,12 +45,32 @@ async function hashPassword(password, salt) {
 
 // Creates a new user account with the provided name, email, and password.
 export async function createAccount({ name, email, password }) {
-  const normalizedEmail = email.trim().toLowerCase();
-  if (!normalizedEmail || !password) {
-    throw new Error("Email and password are required.");
+  const normalizedName = String(name || "").trim();
+  const normalizedEmail = String(email || "")
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedName) {
+    throw new Error("Name is required.");
   }
-  if (password.length < 6) {
-    throw new Error("Password must be at least 6 characters.");
+  if (normalizedName.length < 2 || normalizedName.length > 40) {
+    throw new Error("Name must be between 2 and 40 characters.");
+  }
+  if (!/^\p{L}[\p{L}\p{M}' .-]*$/u.test(normalizedName)) {
+    throw new Error("Name contains invalid characters.");
+  }
+  if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    throw new Error("Invalid email format.");
+  }
+  if (!password) {
+    throw new Error("Password is required.");
+  }
+  if (
+    password.length < 8 ||
+    !/[A-Z]/.test(password) ||
+    !/[0-9]/.test(password)
+  ) {
+    throw new Error("Password is weak.");
   }
 
   const existingAccount = await SecureStore.getItemAsync(ACCOUNT_KEY);
@@ -63,7 +83,7 @@ export async function createAccount({ name, email, password }) {
   const passwordHash = await hashPassword(password, salt);
   const account = {
     id: Crypto.randomUUID(),
-    name: name.trim() || "Habit Builder",
+    name: normalizedName,
     email: normalizedEmail,
     passwordHash,
     passwordSalt: salt,
