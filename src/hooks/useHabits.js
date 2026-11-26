@@ -53,7 +53,7 @@ export function getDateKey(date = new Date()) {
 
 // adding, updating, and deleting habits, and saves changes back to AsyncStorage.
 // It also handles loading errors and provides a retry mechanism.
-export function useHabits() {
+export function useHabits(accountId) {
   const [habits, setHabits] = useState(() => {
     const today = getDateKey();
     return startingHabits.map((habit) => ({
@@ -78,8 +78,8 @@ export function useHabits() {
       // Load habits and completion history in parallel, then normalize the data.
       try {
         const [loadedHabits, loadedHistory] = await Promise.all([
-          loadStoredHabits(),
-          loadStoredCompletionHistory(),
+          loadStoredHabits(accountId),
+          loadStoredCompletionHistory(accountId),
         ]);
 
         // If the component is still mounted, update the state with the loaded habits and completion history.
@@ -130,7 +130,7 @@ export function useHabits() {
     return () => {
       isMounted = false;
     };
-  }, [habitsLoadAttempt]);
+  }, [accountId, habitsLoadAttempt]);
 
   // This effect saves every create, update, delete, or completion change.
   useEffect(() => {
@@ -139,8 +139,8 @@ export function useHabits() {
     const saveHabits = async () => {
       try {
         await Promise.all([
-          saveStoredHabits(habits),
-          saveStoredCompletionHistory(completionHistory),
+          saveStoredHabits(habits, accountId),
+          saveStoredCompletionHistory(completionHistory, accountId),
         ]);
       } catch (error) {
         console.warn("Could not save habits:", error);
@@ -148,7 +148,7 @@ export function useHabits() {
     };
 
     saveHabits();
-  }, [habits, completionHistory, habitsLoaded]);
+  }, [accountId, habits, completionHistory, habitsLoaded]);
 
   // The `toggleHabit` function toggles the completion status of a habit for a specific date (defaulting to today).
   // It updates the habit's completedDates array and the completion history accordingly.

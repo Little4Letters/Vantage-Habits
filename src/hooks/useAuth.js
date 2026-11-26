@@ -33,10 +33,10 @@ export function useAuth() {
 
     const restoreSession = async () => {
       try {
-        const [sessionAccount, savedProfile] = await Promise.all([
-          getSessionAccount(),
-          loadProfile(),
-        ]);
+        const sessionAccount = await getSessionAccount();
+        const savedProfile = sessionAccount
+          ? await loadProfile(sessionAccount.id)
+          : null;
 
         if (isMounted) {
           setAccount(sessionAccount);
@@ -64,7 +64,7 @@ export function useAuth() {
   // The function returns the created account for further use.
   const register = async (accountDetails) => {
     const createdAccount = await createAccount(accountDetails);
-    const savedProfile = await loadProfile();
+    const savedProfile = await loadProfile(createdAccount.id);
     setAccount(createdAccount);
     setProfile(savedProfile);
     return createdAccount;
@@ -76,7 +76,7 @@ export function useAuth() {
 
   const login = async (email, password) => {
     const signedInAccount = await loginAccount(email, password);
-    const savedProfile = await loadProfile();
+    const savedProfile = await loadProfile(signedInAccount.id);
     setAccount(signedInAccount);
     setProfile(savedProfile);
     return signedInAccount;
@@ -86,7 +86,9 @@ export function useAuth() {
   // It saves the updated profile to storage and updates the account state with the new name and email.
 
   const updateProfile = async (nextProfile) => {
-    await saveProfile(nextProfile);
+    const accountId = account?.id;
+    if (!accountId) throw new Error("No active account.");
+    await saveProfile(accountId, nextProfile);
     setProfile(nextProfile);
     setAccount((current) =>
       current

@@ -1,5 +1,11 @@
-import React, { useState } from "react";
-import { TouchableOpacity, ScrollView, StyleSheet, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Animated,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -63,8 +69,11 @@ function getCurrentStreak(habit, today) {
   return streak;
 }
 
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
 export default function ProgressScreen({ habits, onToggleHabit }) {
   const [period, setPeriod] = useState("This Week");
+  const [scoreAnimation] = useState(() => new Animated.Value(0));
   const today = new Date();
   const todayKey = getDateKey(today);
   const periodDateKeys = getPeriodDateKeys(period, today);
@@ -82,6 +91,19 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
   const score = totalChecks
     ? Math.round((completedChecks / totalChecks) * 100)
     : 0;
+
+  useEffect(() => {
+    Animated.timing(scoreAnimation, {
+      toValue: score,
+      duration: 520,
+      useNativeDriver: false,
+    }).start();
+  }, [score, scoreAnimation]);
+
+  const scoreOffset = scoreAnimation.interpolate({
+    inputRange: [0, 100],
+    outputRange: [2 * Math.PI * 49, 0],
+  });
   const weekDates = getPeriodDateKeys("This Week", today);
   const currentStreak = Math.max(
     0,
@@ -157,7 +179,7 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
                 stroke="#ECECEF"
                 strokeWidth="10"
               />
-              <Circle
+              <AnimatedCircle
                 cx="58"
                 cy="58"
                 r="49"
@@ -166,7 +188,7 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
                 strokeWidth="10"
                 strokeLinecap="round"
                 strokeDasharray={`${2 * Math.PI * 49}`}
-                strokeDashoffset={`${2 * Math.PI * 49 * (1 - score / 100)}`}
+                strokeDashoffset={scoreOffset}
                 transform="rotate(-90 58 58)"
               />
             </Svg>

@@ -1,30 +1,20 @@
-// Module: Diri malabtan
-
 import { useState } from "react";
 import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
   ActivityIndicator,
+  Animated,
+  StyleSheet,
   Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-
-// SafeAreaProvider is a component that provides safe area insets to its children,
-// Ensuring that content is not obscured by device notches or other screen elements.
-// The useSafeAreaInsets hook allows components to access the safe area insets for layout adjustments.
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-
-// The following imports presented here as App.jsx is the main entry point of the app and,
-// It imports various components and screens from the src directory.
-// The code also includes a custom tab bar for navigation between different screens in the app.
-
 import {
   useFonts,
   NunitoSans_400Regular,
@@ -34,22 +24,17 @@ import {
   NunitoSans_800ExtraBold,
 } from "@expo-google-fonts/nunito-sans";
 
-// Paging
 import HomeScreen from "./src/screens/HomeScreen.jsx";
 import AddHabitScrn from "./src/screens/AddHabitScrn.jsx";
 import ProgressScreen from "./src/screens/ProgressScrn.jsx";
 import AlertsScreen from "./src/screens/NotificationScrn.jsx";
-
-// CONDITIONS!!! The following are;
-
-// ProfileScrn.jsx contains TypeScript syntax, so avoid named-export parsing for this default import.
 // eslint-disable-next-line import/namespace, import/no-named-as-default, import/no-named-as-default-member
 import ProfileScreen from "./src/screens/ProfileScrn.jsx";
 import LoginScreen from "./src/screens/LoginScreen.tsx";
 import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
 import { palette as theme } from "./src/theme.js";
-import { useHabits } from "./src/hooks/useHabits";
-import { useAuth } from "./src/hooks/useAuth";
+import { useHabits } from "./src/hooks/useHabits.js";
+import { useAuth } from "./src/hooks/useAuth.js";
 
 const Tab = createBottomTabNavigator();
 
@@ -61,7 +46,6 @@ const tabIcons = {
   Profile: ["person-outline", "person"],
 };
 
-//
 function CustomTabBar({ state, navigation }) {
   const insets = useSafeAreaInsets();
 
@@ -86,23 +70,26 @@ function CustomTabBar({ state, navigation }) {
                 route.name === "Add" ? "Add habit" : route.name
               }
               accessibilityState={focused ? { selected: true } : {}}
+              activeOpacity={0.78}
               onPress={() => {
                 const event = navigation.emit({
                   type: "tabPress",
                   target: route.key,
                   canPreventDefault: true,
                 });
-                if (!focused && !event.defaultPrevented)
+                if (!focused && !event.defaultPrevented) {
                   navigation.navigate(route.name);
+                }
               }}
               style={styles.tabButton}
               hitSlop={8}
             >
-              <View
+              <Animated.View
                 style={[
                   styles.tabIconHit,
                   focused && !isAdd && styles.tabIconSelected,
                   isAdd && styles.addTabButton,
+                  !isAdd && { transform: [{ scale: focused ? 1.06 : 1 }] },
                 ]}
               >
                 <Ionicons
@@ -110,7 +97,7 @@ function CustomTabBar({ state, navigation }) {
                   size={isAdd ? 27 : 21}
                   color={iconColor}
                 />
-              </View>
+              </Animated.View>
             </TouchableOpacity>
           );
         })}
@@ -119,11 +106,7 @@ function CustomTabBar({ state, navigation }) {
   );
 }
 
-// AsyncStorage is used to persist habit data and completion history across app sessions.
-
-// The useHabits hook manages the state of habits, including loading from storage, toggling completion, and adding/updating/deleting habits.
-// The useAuth hook manages user authentication, including session restoration, login, registration, profile updates, and logout.
-function HabitTabs({ profile, onUpdateProfile, onLogout }) {
+function HabitTabs({ accountId, profile, onUpdateProfile, onLogout }) {
   const {
     habits,
     isLoadingHabits,
@@ -133,9 +116,8 @@ function HabitTabs({ profile, onUpdateProfile, onLogout }) {
     addHabit,
     updateHabit,
     deleteHabit,
-  } = useHabits();
+  } = useHabits(accountId);
 
-  // Loading state: keep the app from rendering an incomplete habit dataset.
   if (isLoadingHabits) {
     return (
       <View style={styles.storageStateContainer}>
@@ -145,7 +127,6 @@ function HabitTabs({ profile, onUpdateProfile, onLogout }) {
     );
   }
 
-  // Error state: allow the user to retry the AsyncStorage read.
   if (habitsLoadError) {
     return (
       <View style={styles.storageStateContainer}>
@@ -161,18 +142,23 @@ function HabitTabs({ profile, onUpdateProfile, onLogout }) {
     );
   }
 
-  // Storage is loaded and ready: render the main app with the bottom tab navigator.
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        animation: "fade",
         sceneStyle: { backgroundColor: theme.natural[50] },
       }}
     >
       <Tab.Screen name="Home">
         {(props) => (
-          <HomeScreen {...props} habits={habits} onToggleHabit={toggleHabit} />
+          <HomeScreen
+            {...props}
+            accountId={accountId}
+            habits={habits}
+            onToggleHabit={toggleHabit}
+          />
         )}
       </Tab.Screen>
       <Tab.Screen name="Progress">
@@ -211,15 +197,13 @@ function HabitTabs({ profile, onUpdateProfile, onLogout }) {
 }
 
 export default function App() {
-  let [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     NunitoSans_400Regular,
     NunitoSans_500Medium,
     NunitoSans_600SemiBold,
     NunitoSans_700Bold,
     NunitoSans_800ExtraBold,
   });
-
-  // Save the current screen state for the entry flow (onboarding, login, or main app) and the login mode (login or register).
   const [entryScreen, setEntryScreen] = useState("onboarding");
   const [loginMode, setLoginMode] = useState("login");
   const {
@@ -232,7 +216,6 @@ export default function App() {
     logout,
   } = useAuth();
 
-  // Loading state for fonts and restored authentication/session data.
   if (!fontsLoaded || isAuthLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -247,6 +230,7 @@ export default function App() {
       <NavigationContainer>
         {account ? (
           <HabitTabs
+            accountId={account.id}
             profile={profile}
             onUpdateProfile={updateProfile}
             onLogout={async () => {
@@ -260,17 +244,13 @@ export default function App() {
             onBack={() => setEntryScreen("onboarding")}
             onLogin={async (email, password) => {
               await login(email, password);
-              setEntryScreen("app");
             }}
-            // Loading UI is handled by the useAuth hook, so no need to manage loading state here.
             onRegister={async (details) => {
               await register(details);
-              setEntryScreen("app");
             }}
           />
         ) : (
           <OnboardingScreen
-            // Error and retry handling is managed by the useAuth hook, so no need to manage error state here.
             onLogin={() => {
               setLoginMode("login");
               setEntryScreen("login");
@@ -287,41 +267,32 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.natural[50],
+  },
   storageStateContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 24,
     backgroundColor: theme.natural[50],
+    paddingHorizontal: 24,
   },
-  storageStateText: {
-    marginTop: 12,
-    color: theme.tertiary[800],
-    fontSize: 16,
-  },
+  storageStateText: { color: theme.tertiary[700], marginTop: 12 },
   storageErrorText: {
-    textAlign: "center",
     color: theme.tertiary[900],
-    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 16,
   },
   storageRetryButton: {
-    marginTop: 16,
+    backgroundColor: theme.primary[500],
+    borderRadius: 22,
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: theme.primary[600],
+    paddingVertical: 11,
   },
-  storageRetryText: {
-    color: theme.white,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: theme.natural[50],
-  },
+  storageRetryText: { color: theme.white, fontWeight: "700" },
   tabDockPosition: {
     position: "absolute",
     left: 20,
@@ -351,10 +322,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  tabIconSelected: {
-    backgroundColor: theme.white,
-    borderRadius: 14,
-  },
+  tabIconSelected: { backgroundColor: theme.white, borderRadius: 14 },
   addTabButton: {
     width: 54,
     height: 54,

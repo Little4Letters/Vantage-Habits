@@ -4,9 +4,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export const HABITS_STORAGE_KEY = "@vantage-habits/habits";
 export const COMPLETION_HISTORY_KEY = "@vantage-habits/completion-history";
 
+function scopedKey(key, accountId) {
+  return accountId ? `${key}:${accountId}` : key;
+}
+
 // AsyncStorage stores text. Load it, then parse and validate the JSON array.
-export async function loadStoredHabits() {
-  const storedHabits = await AsyncStorage.getItem(HABITS_STORAGE_KEY);
+export async function loadStoredHabits(accountId) {
+  const storedHabits = await AsyncStorage.getItem(
+    scopedKey(HABITS_STORAGE_KEY, accountId),
+  );
 
   if (!storedHabits) return null;
 
@@ -15,13 +21,18 @@ export async function loadStoredHabits() {
 }
 
 // Convert the habit array to text before saving it to device storage.
-export async function saveStoredHabits(habits) {
-  await AsyncStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
+export async function saveStoredHabits(habits, accountId) {
+  await AsyncStorage.setItem(
+    scopedKey(HABITS_STORAGE_KEY, accountId),
+    JSON.stringify(habits),
+  );
 }
 
 // Completion history is stored separately for durable, date-based progress records.
-export async function loadStoredCompletionHistory() {
-  const storedHistory = await AsyncStorage.getItem(COMPLETION_HISTORY_KEY);
+export async function loadStoredCompletionHistory(accountId) {
+  const storedHistory = await AsyncStorage.getItem(
+    scopedKey(COMPLETION_HISTORY_KEY, accountId),
+  );
 
   if (!storedHistory) return [];
 
@@ -29,9 +40,12 @@ export async function loadStoredCompletionHistory() {
   return Array.isArray(parsedHistory) ? parsedHistory : [];
 }
 
-export async function saveStoredCompletionHistory(completionHistory) {
+export async function saveStoredCompletionHistory(
+  completionHistory,
+  accountId,
+) {
   await AsyncStorage.setItem(
-    COMPLETION_HISTORY_KEY,
+    scopedKey(COMPLETION_HISTORY_KEY, accountId),
     JSON.stringify(completionHistory),
   );
 }

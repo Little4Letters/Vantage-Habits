@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
+  Animated,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -47,6 +48,24 @@ export default function LoginScreen({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [screenFade] = useState(() => new Animated.Value(0));
+  const [screenLift] = useState(() => new Animated.Value(18));
+  const [buttonScale] = useState(() => new Animated.Value(1));
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(screenFade, {
+        toValue: 1,
+        duration: 320,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+      Animated.timing(screenLift, {
+        toValue: 0,
+        duration: 320,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+    ]).start();
+  }, [screenFade, screenLift]);
 
   const showPreviewMessage = (featureName: string) => {
     Alert.alert(
@@ -129,7 +148,10 @@ export default function LoginScreen({
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
 
-      if (message.includes("An account already exists")) {
+      if (
+        message.includes("An account already exists") ||
+        message.includes("An account with this email already exists")
+      ) {
         Alert.alert(
           "Account already set up",
           "This device already has a Vantage Habits account. Log in or continue with the existing account.",
@@ -186,7 +208,15 @@ export default function LoginScreen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.content}>
+          <Animated.View
+            style={[
+              styles.content,
+              {
+                opacity: screenFade,
+                transform: [{ translateY: screenLift }],
+              },
+            ]}
+          >
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Back to welcome screen"
@@ -338,9 +368,27 @@ export default function LoginScreen({
 
               <TouchableOpacity
                 accessibilityRole="button"
+                activeOpacity={0.86}
                 disabled={isSubmitting}
-                onPress={submitAuth}
-                style={styles.loginButton}
+                onPress={() => {
+                  Animated.sequence([
+                    Animated.timing(buttonScale, {
+                      toValue: 0.97,
+                      duration: 80,
+                      useNativeDriver: Platform.OS !== "web",
+                    }),
+                    Animated.spring(buttonScale, {
+                      toValue: 1,
+                      friction: 5,
+                      useNativeDriver: Platform.OS !== "web",
+                    }),
+                  ]).start();
+                  submitAuth();
+                }}
+                style={[
+                  styles.loginButton,
+                  { transform: [{ scale: buttonScale }] },
+                ]}
               >
                 <Text style={styles.loginButtonText}>
                   {isSubmitting
@@ -404,7 +452,7 @@ export default function LoginScreen({
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

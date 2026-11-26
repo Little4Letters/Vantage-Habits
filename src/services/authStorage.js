@@ -17,34 +17,63 @@ import { Platform } from "react-native";
 // Using unique keys ensures that the data can be retrieved and managed correctly without conflicts.
 
 const ACCOUNT_KEY = "@vantage-habits/account";
+const ACCOUNTS_KEY = "@vantage-habits/accounts";
 const SESSION_KEY = "@vantage-habits/session";
 const PROFILE_KEY = "@vantage-habits/profile";
 
 async function getAccountStorage() {
   if (Platform.OS === "web") return AsyncStorage;
 
-  const available = await SecureStore.isAvailableAsync();
-  if (!available) {
-    throw new Error("Secure storage is unavailable on this device.");
+  try {
+    if (await SecureStore.isAvailableAsync()) return SecureStore;
+  } catch {
+    // Fall back to AsyncStorage when native secure storage is unavailable.
   }
-  return SecureStore;
+  return AsyncStorage;
 }
 
-async function getStoredAccount() {
+async function getStoredValue(key) {
   const accountStorage = await getAccountStorage();
-  if (Platform.OS === "web") {
-    return accountStorage.getItem(ACCOUNT_KEY);
+  if (accountStorage === SecureStore) {
+    return accountStorage.getItemAsync(key);
   }
-  return accountStorage.getItemAsync(ACCOUNT_KEY);
+  return accountStorage.getItem(key);
 }
 
-async function setStoredAccount(account) {
+async function setStoredValue(key, value) {
   const accountStorage = await getAccountStorage();
-  if (Platform.OS === "web") {
-    await accountStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
+  if (accountStorage === SecureStore) {
+    await accountStorage.setItemAsync(key, value);
     return;
   }
-  await accountStorage.setItemAsync(ACCOUNT_KEY, JSON.stringify(account));
+  await accountStorage.setItem(key, value);
+}
+
+async function getStoredAccounts() {
+  const storedAccounts = await getStoredValue(ACCOUNTS_KEY);
+  if (storedAccounts) {
+    try {
+      const accounts = JSON.parse(storedAccounts);
+      if (Array.isArray(accounts)) return accounts;
+    } catch {
+      // Ignore malformed account lists and try the legacy key below.
+    }
+  }
+
+  const legacyAccount = await getStoredValue(ACCOUNT_KEY);
+  if (!legacyAccount) return [];
+
+  try {
+    const account = JSON.parse(legacyAccount);
+    await setStoredValue(ACCOUNTS_KEY, JSON.stringify([account]));
+    return [account];
+  } catch {
+    return [];
+  }
+}
+
+async function setStoredAccounts(accounts) {
+  await setStoredValue(ACCOUNTS_KEY, JSON.stringify(accounts));
 }
 
 // Converts a sequence of bytes to a hexadecimal string.
@@ -101,9 +130,11 @@ export async function createAccount({ name, email, password }) {
     throw new Error("Password is weak.");
   }
 
-  const existingAccount = await getStoredAccount();
-  if (existingAccount) {
-    throw new Error("An account already exists on this device.");
+  const existingAccounts = await getStoredAccounts();
+  if (existingAccounts.some((account) => account.email === normalizedEmail)) {
+    throw new Error(
+      "An account with this email already exists on this device.",
+    );
   }
 
   const saltBytes = await Crypto.getRandomBytesAsync(16);
@@ -117,8 +148,8 @@ export async function createAccount({ name, email, password }) {
     passwordSalt: salt,
   };
 
-  await setStoredAccount(account);
-  await saveProfile({
+  await setStoredAccounts([...existingAccounts, account]);
+  await saveProfile(account.id, {
     name: account.name,
     email: account.email,
     gender: "Male",
@@ -135,16 +166,16 @@ export async function createAccount({ name, email, password }) {
 
 export async function loginAccount(email, password) {
   const normalizedEmail = email.trim().toLowerCase();
-  const storedAccount = await getStoredAccount();
+  const storedAccounts = await getStoredAccounts();
 
-  if (!storedAccount) {
+  if (!storedAccounts.length) {
     throw new Error(
       "No account exists on this device. Create an account first.",
     );
   }
 
-  const account = JSON.parse(storedAccount);
-  if (account.email !== normalizedEmail) {
+  const account = storedAccounts.find((item) => item.email === normalizedEmail);
+  if (!account) {
     throw new Error("Incorrect email or password.");
   }
 
@@ -161,11 +192,8 @@ export async function getSessionAccount() {
   const sessionId = await AsyncStorage.getItem(SESSION_KEY);
   if (!sessionId) return null;
 
-  const storedAccount = await getStoredAccount();
-  if (!storedAccount) return null;
-
-  const account = JSON.parse(storedAccount);
-  return account.id === sessionId ? account : null;
+  const storedAccounts = await getStoredAccounts();
+  return storedAccounts.find((account) => account.id === sessionId) || null;
 }
 
 export async function clearSession() {
@@ -176,15 +204,18 @@ async function saveSession(accountId) {
   await AsyncStorage.setItem(SESSION_KEY, accountId);
 }
 
-export async function loadProfile() {
-  const storedProfile = await AsyncStorage.getItem(PROFILE_KEY);
+export async function loadProfile(accountId) {
+  if (!accountId) return null;
+  const storedProfile = await AsyncStorage.getItem(
+    `${PROFILE_KEY}:${accountId}`,
+  );
   if (!storedProfile) return null;
 
   try {
     const profile = JSON.parse(storedProfile);
     return typeof profile === "object" && profile ? profile : null;
   } catch {
-    await AsyncStorage.removeItem(PROFILE_KEY);
+    await AsyncStorage.removeItem(`${PROFILE_KEY}:${accountId}`);
     return null;
   }
 }
@@ -192,16 +223,17 @@ export async function loadProfile() {
 // Saves the user profile to AsyncStorage and updates the stored account information with the new name and email.
 // Why this matters?
 // This function ensures that the user's profile information is persisted across app sessions and that the account information remains consistent with the profile data.
-export async function saveProfile(profile) {
-  await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+export async function saveProfile(accountId, profile) {
+  await AsyncStorage.setItem(
+    `${PROFILE_KEY}:${accountId}`,
+    JSON.stringify(profile),
+  );
 
-  const storedAccount = await getStoredAccount();
-  if (storedAccount) {
-    const account = JSON.parse(storedAccount);
-    await setStoredAccount({
-      ...account,
-      name: profile.name,
-      email: profile.email,
-    });
-  }
+  const storedAccounts = await getStoredAccounts();
+  const updatedAccounts = storedAccounts.map((account) =>
+    account.id === accountId
+      ? { ...account, name: profile.name, email: profile.email }
+      : account,
+  );
+  await setStoredAccounts(updatedAccounts);
 }
