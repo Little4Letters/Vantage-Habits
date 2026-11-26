@@ -218,6 +218,8 @@ export default function App() {
     NunitoSans_700Bold,
     NunitoSans_800ExtraBold,
   });
+
+  // Save the current screen state for the entry flow (onboarding, login, or main app) and the login mode (login or register).
   const [entryScreen, setEntryScreen] = useState("onboarding");
   const [loginMode, setLoginMode] = useState("login");
   const {
@@ -260,6 +262,7 @@ export default function App() {
               await login(email, password);
               setEntryScreen("app");
             }}
+            // Loading UI is handled by the useAuth hook, so no need to manage loading state here.
             onRegister={async (details) => {
               await register(details);
               setEntryScreen("app");
@@ -267,6 +270,7 @@ export default function App() {
           />
         ) : (
           <OnboardingScreen
+            // Error and retry handling is managed by the useAuth hook, so no need to manage error state here.
             onLogin={() => {
               setLoginMode("login");
               setEntryScreen("login");
