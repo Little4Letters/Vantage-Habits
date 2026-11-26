@@ -42,6 +42,11 @@ export function useAuth() {
           setAccount(sessionAccount);
           setProfile(savedProfile);
         }
+      } catch {
+        if (isMounted) {
+          setAccount(null);
+          setProfile(null);
+        }
       } finally {
         if (isMounted) setIsLoading(false);
       }

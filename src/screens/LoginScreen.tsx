@@ -142,12 +142,32 @@ export default function LoginScreen({
           "Unable to log in",
           "The email or password could not be verified. Check both details and try again.",
         );
+      } else if (
+        message.includes("Name") ||
+        message.includes("Invalid email") ||
+        message.includes("Password is weak")
+      ) {
+        Alert.alert(
+          "Details need correction",
+          "Review your name, email, and password. They must meet the account requirements.",
+        );
+      } else if (
+        message.toLowerCase().includes("securestore") ||
+        message.toLowerCase().includes("secure store") ||
+        message.toLowerCase().includes("native module")
+      ) {
+        Alert.alert(
+          "Secure storage unavailable",
+          "Account setup could not access protected device storage. Restart the app and try again.",
+        );
       } else {
         Alert.alert(
           mode === "register"
             ? "Account setup unsuccessful"
             : "Login unsuccessful",
-          "Your details could not be verified securely. Check them and try again.",
+          mode === "register"
+            ? "Device storage could not complete setup. Restart the app and try again."
+            : "Your login could not be verified. Check your details and try again.",
         );
       }
     } finally {

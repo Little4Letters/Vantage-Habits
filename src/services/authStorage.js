@@ -8,6 +8,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import * as Crypto from "expo-crypto";
+import { Platform } from "react-native";
 
 // Define keys for storing data in SecureStore and AsyncStorage
 // These keys are used to uniquely identify the stored account, session, and profile data in the respective storage systems.
@@ -18,6 +19,33 @@ import * as Crypto from "expo-crypto";
 const ACCOUNT_KEY = "@vantage-habits/account";
 const SESSION_KEY = "@vantage-habits/session";
 const PROFILE_KEY = "@vantage-habits/profile";
+
+async function getAccountStorage() {
+  if (Platform.OS === "web") return AsyncStorage;
+
+  const available = await SecureStore.isAvailableAsync();
+  if (!available) {
+    throw new Error("Secure storage is unavailable on this device.");
+  }
+  return SecureStore;
+}
+
+async function getStoredAccount() {
+  const accountStorage = await getAccountStorage();
+  if (Platform.OS === "web") {
+    return accountStorage.getItem(ACCOUNT_KEY);
+  }
+  return accountStorage.getItemAsync(ACCOUNT_KEY);
+}
+
+async function setStoredAccount(account) {
+  const accountStorage = await getAccountStorage();
+  if (Platform.OS === "web") {
+    await accountStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
+    return;
+  }
+  await accountStorage.setItemAsync(ACCOUNT_KEY, JSON.stringify(account));
+}
 
 // Converts a sequence of bytes to a hexadecimal string.
 // Why this matters?
@@ -73,7 +101,7 @@ export async function createAccount({ name, email, password }) {
     throw new Error("Password is weak.");
   }
 
-  const existingAccount = await SecureStore.getItemAsync(ACCOUNT_KEY);
+  const existingAccount = await getStoredAccount();
   if (existingAccount) {
     throw new Error("An account already exists on this device.");
   }
@@ -89,7 +117,7 @@ export async function createAccount({ name, email, password }) {
     passwordSalt: salt,
   };
 
-  await SecureStore.setItemAsync(ACCOUNT_KEY, JSON.stringify(account));
+  await setStoredAccount(account);
   await saveProfile({
     name: account.name,
     email: account.email,
@@ -107,7 +135,7 @@ export async function createAccount({ name, email, password }) {
 
 export async function loginAccount(email, password) {
   const normalizedEmail = email.trim().toLowerCase();
-  const storedAccount = await SecureStore.getItemAsync(ACCOUNT_KEY);
+  const storedAccount = await getStoredAccount();
 
   if (!storedAccount) {
     throw new Error(
@@ -133,7 +161,7 @@ export async function getSessionAccount() {
   const sessionId = await AsyncStorage.getItem(SESSION_KEY);
   if (!sessionId) return null;
 
-  const storedAccount = await SecureStore.getItemAsync(ACCOUNT_KEY);
+  const storedAccount = await getStoredAccount();
   if (!storedAccount) return null;
 
   const account = JSON.parse(storedAccount);
@@ -152,8 +180,13 @@ export async function loadProfile() {
   const storedProfile = await AsyncStorage.getItem(PROFILE_KEY);
   if (!storedProfile) return null;
 
-  const profile = JSON.parse(storedProfile);
-  return typeof profile === "object" && profile ? profile : null;
+  try {
+    const profile = JSON.parse(storedProfile);
+    return typeof profile === "object" && profile ? profile : null;
+  } catch {
+    await AsyncStorage.removeItem(PROFILE_KEY);
+    return null;
+  }
 }
 
 // Saves the user profile to AsyncStorage and updates the stored account information with the new name and email.
@@ -162,16 +195,13 @@ export async function loadProfile() {
 export async function saveProfile(profile) {
   await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 
-  const storedAccount = await SecureStore.getItemAsync(ACCOUNT_KEY);
+  const storedAccount = await getStoredAccount();
   if (storedAccount) {
     const account = JSON.parse(storedAccount);
-    await SecureStore.setItemAsync(
-      ACCOUNT_KEY,
-      JSON.stringify({
-        ...account,
-        name: profile.name,
-        email: profile.email,
-      }),
-    );
+    await setStoredAccount({
+      ...account,
+      name: profile.name,
+      email: profile.email,
+    });
   }
 }
