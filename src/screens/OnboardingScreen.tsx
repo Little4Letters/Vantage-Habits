@@ -6,8 +6,42 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { palette as theme } from "../theme.js";
+
+const habitShowcase = [
+  {
+    label: "#Reading",
+    description: "A person reading a book",
+    image:
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=900&auto=format&fit=crop",
+  },
+  {
+    label: "#Movement",
+    description: "A person exercising outdoors",
+    image:
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=900&auto=format&fit=crop",
+  },
+  {
+    label: "#Hydration",
+    description: "A glass of water",
+    image:
+      "https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=900&auto=format&fit=crop",
+  },
+  {
+    label: "#Rest",
+    description: "A calm bedroom prepared for sleep",
+    image:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=900&auto=format&fit=crop",
+  },
+  {
+    label: "#Mindfulness",
+    description: "A person practicing meditation",
+    image:
+      "https://images.unsplash.com/photo-1545389336-cf090694435e?q=80&w=900&auto=format&fit=crop",
+  },
+];
 
 type OnboardingScreenProps = {
   onLogin: () => void;
@@ -18,6 +52,8 @@ export default function OnboardingScreen({
   onLogin,
   onCreateAccount,
 }: OnboardingScreenProps) {
+  const [carouselWidth, setCarouselWidth] = useState(0);
+  const [activeHabit, setActiveHabit] = useState(0);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -31,19 +67,68 @@ export default function OnboardingScreen({
             <View style={[styles.sideCard, styles.rightSideCard]} />
 
             <View style={styles.mainCard}>
-              <View style={styles.imageFrame}>
-                <Image
-                  accessibilityLabel="A person reading a book"
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=900&auto=format&fit=crop",
-                  }}
-                  resizeMode="cover"
-                  style={styles.cardImage}
-                />
-                <View style={styles.imageTint} />
-                <View style={styles.hashtagBadge}>
-                  <Text style={styles.hashtagText}>#Reading</Text>
-                </View>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                directionalLockEnabled
+                showsHorizontalScrollIndicator={false}
+                style={styles.carousel}
+                onLayout={(event) =>
+                  setCarouselWidth(event.nativeEvent.layout.width)
+                }
+                scrollEventThrottle={32}
+                onScroll={(event) => {
+                  if (carouselWidth > 0) {
+                    const nextIndex = Math.min(
+                      habitShowcase.length - 1,
+                      Math.max(
+                        0,
+                        Math.round(
+                          event.nativeEvent.contentOffset.x / carouselWidth,
+                        ),
+                      ),
+                    );
+                    setActiveHabit((current) =>
+                      current === nextIndex ? current : nextIndex,
+                    );
+                  }
+                }}
+              >
+                {habitShowcase.map((habit) => (
+                  <View
+                    key={habit.label}
+                    style={[
+                      styles.imageFrame,
+                      { width: carouselWidth || "100%" },
+                    ]}
+                  >
+                    <Image
+                      accessibilityLabel={habit.description}
+                      source={{ uri: habit.image }}
+                      resizeMode="cover"
+                      style={styles.cardImage}
+                    />
+                    <View style={styles.imageTint} />
+                    <View style={styles.hashtagBadge}>
+                      <Text style={styles.hashtagText}>{habit.label}</Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+              <View
+                style={styles.pagination}
+                accessibilityLabel={`Habit image ${activeHabit + 1} of ${habitShowcase.length}`}
+              >
+                {habitShowcase.map((habit, index) => (
+                  <View key={habit.label} style={styles.paginationHitArea}>
+                    <View
+                      style={[
+                        styles.paginationDot,
+                        activeHabit === index && styles.paginationDotActive,
+                      ]}
+                    />
+                  </View>
+                ))}
               </View>
             </View>
           </View>
@@ -62,7 +147,7 @@ export default function OnboardingScreen({
               onPress={onLogin}
               style={styles.loginButton}
             >
-              <Text style={styles.loginButtonText}>Login to your account</Text>
+              <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
             <TouchableOpacity
               accessibilityRole="button"
@@ -113,8 +198,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     zIndex: 1,
   },
-  imageFrame: {
+  carousel: {
     width: "100%",
+    height: "100%",
+    borderRadius: 34,
+  },
+  imageFrame: {
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
@@ -134,7 +223,7 @@ const styles = StyleSheet.create({
   },
   hashtagBadge: {
     position: "absolute",
-    bottom: 22,
+    bottom: 42,
     alignSelf: "center",
     paddingHorizontal: 16,
     paddingVertical: 5,
@@ -150,6 +239,30 @@ const styles = StyleSheet.create({
     color: theme.tertiary[900],
     fontFamily: "NunitoSans_800ExtraBold",
     fontSize: 18,
+  },
+  pagination: {
+    position: "absolute",
+    bottom: 10,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    zIndex: 2,
+  },
+  paginationHitArea: {
+    minWidth: 24,
+    minHeight: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  paginationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.72)",
+  },
+  paginationDotActive: {
+    width: 16,
+    backgroundColor: theme.white,
   },
   sideCard: {
     position: "absolute",
