@@ -9,15 +9,32 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import * as Crypto from "expo-crypto";
 
+// Define keys for storing data in SecureStore and AsyncStorage
+// These keys are used to uniquely identify the stored account, session, and profile data in the respective storage systems.
+
+// Why this matters?
+// Using unique keys ensures that the data can be retrieved and managed correctly without conflicts.
+
 const ACCOUNT_KEY = "@vantage-habits/account";
 const SESSION_KEY = "@vantage-habits/session";
 const PROFILE_KEY = "@vantage-habits/profile";
+
+// Converts a sequence of bytes to a hexadecimal string.
+// Why this matters?
+
+// This function is used to convert the random salt bytes generated for password hashing into a string format that can be stored and retrieved from SecureStore.
+// The hexadecimal representation is a common way to represent binary data in a readable format.
 
 function bytesToHex(bytes) {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
     "",
   );
 }
+
+// Hashes a password using SHA-256 with a given salt.
+// Why this matters?
+// This function securely hashes the user's password combined with a unique salt to protect against rainbow table attacks,
+// And ensure that even if two users have the same password, their stored hashes will be different.
 
 async function hashPassword(password, salt) {
   return Crypto.digestStringAsync(
@@ -26,6 +43,7 @@ async function hashPassword(password, salt) {
   );
 }
 
+// Creates a new user account with the provided name, email, and password.
 export async function createAccount({ name, email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
   if (!normalizedEmail || !password) {
@@ -62,6 +80,10 @@ export async function createAccount({ name, email, password }) {
 
   return account;
 }
+
+// Logs in a user with the provided email and password, returning the account if successful.
+// Why this matters?
+// This function verifies the user's credentials by checking the stored account information and comparing the hashed password.
 
 export async function loginAccount(email, password) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -114,6 +136,9 @@ export async function loadProfile() {
   return typeof profile === "object" && profile ? profile : null;
 }
 
+// Saves the user profile to AsyncStorage and updates the stored account information with the new name and email.
+// Why this matters?
+// This function ensures that the user's profile information is persisted across app sessions and that the account information remains consistent with the profile data.
 export async function saveProfile(profile) {
   await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 
