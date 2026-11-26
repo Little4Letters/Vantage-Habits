@@ -165,6 +165,7 @@ function HabitTabs({ accountId, profile, onUpdateProfile, onLogout }) {
         {(props) => (
           <ProgressScreen
             {...props}
+            accountId={accountId}
             habits={habits}
             onToggleHabit={toggleHabit}
           />
@@ -174,6 +175,7 @@ function HabitTabs({ accountId, profile, onUpdateProfile, onLogout }) {
         {(props) => (
           <AddHabitScrn
             {...props}
+            accountId={accountId}
             habits={habits}
             onAddHabit={addHabit}
             onUpdateHabit={updateHabit}
@@ -181,11 +183,14 @@ function HabitTabs({ accountId, profile, onUpdateProfile, onLogout }) {
           />
         )}
       </Tab.Screen>
-      <Tab.Screen name="Alerts" component={AlertsScreen} />
+      <Tab.Screen name="Alerts">
+        {(props) => <AlertsScreen {...props} accountId={accountId} />}
+      </Tab.Screen>
       <Tab.Screen name="Profile">
         {(props) => (
           <ProfileScreen
             {...props}
+            accountId={accountId}
             profile={profile}
             onUpdateProfile={onUpdateProfile}
             onLogout={onLogout}

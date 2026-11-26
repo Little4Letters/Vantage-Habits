@@ -11,6 +11,7 @@ import Svg, { Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText as Text } from "../components/Typography.js";
 import HabitGlyph from "../components/HabitGlyph.js";
+import ScreenTutorial from "../components/ScreenTutorial.js";
 import { palette as theme } from "../theme.js";
 
 const periods = ["Today", "This Week", "This Month"];
@@ -69,11 +70,10 @@ function getCurrentStreak(habit, today) {
   return streak;
 }
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-export default function ProgressScreen({ habits, onToggleHabit }) {
+export default function ProgressScreen({ habits, onToggleHabit, accountId }) {
   const [period, setPeriod] = useState("This Week");
   const [scoreAnimation] = useState(() => new Animated.Value(0));
+  const [displayScore, setDisplayScore] = useState(0);
   const today = new Date();
   const todayKey = getDateKey(today);
   const periodDateKeys = getPeriodDateKeys(period, today);
@@ -93,17 +93,20 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
     : 0;
 
   useEffect(() => {
+    const listenerId = scoreAnimation.addListener(({ value }) => {
+      setDisplayScore(Math.round(value));
+    });
+
     Animated.timing(scoreAnimation, {
       toValue: score,
       duration: 520,
       useNativeDriver: false,
     }).start();
+
+    return () => scoreAnimation.removeListener(listenerId);
   }, [score, scoreAnimation]);
 
-  const scoreOffset = scoreAnimation.interpolate({
-    inputRange: [0, 100],
-    outputRange: [2 * Math.PI * 49, 0],
-  });
+  const scoreOffset = 2 * Math.PI * 49 * (1 - displayScore / 100);
   const weekDates = getPeriodDateKeys("This Week", today);
   const currentStreak = Math.max(
     0,
@@ -112,6 +115,27 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScreenTutorial
+        accountId={accountId}
+        screenKey="progress"
+        steps={[
+          {
+            icon: "stats-chart-outline",
+            title: "Read your score",
+            text: "The circle shows your completed habits for the selected period.",
+          },
+          {
+            icon: "calendar-outline",
+            title: "Switch periods",
+            text: "Choose Today, This Week, or This Month to change the overview.",
+          },
+          {
+            icon: "checkbox-outline",
+            title: "Update progress",
+            text: "Tap a day in a habit card to mark or clear its completion.",
+          },
+        ]}
+      />
       <ScrollView
         contentContainerStyle={styles.screenContent}
         showsVerticalScrollIndicator={false}
@@ -179,7 +203,7 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
                 stroke="#ECECEF"
                 strokeWidth="10"
               />
-              <AnimatedCircle
+              <Circle
                 cx="58"
                 cy="58"
                 r="49"
@@ -194,7 +218,7 @@ export default function ProgressScreen({ habits, onToggleHabit }) {
             </Svg>
             <View style={styles.ringCutout}>
               <Text style={styles.scoreCaption}>Habit score</Text>
-              <Text style={styles.scoreValue}>{score}%</Text>
+              <Text style={styles.scoreValue}>{displayScore}%</Text>
             </View>
           </View>
         </View>

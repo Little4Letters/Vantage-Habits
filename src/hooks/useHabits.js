@@ -54,13 +54,7 @@ export function getDateKey(date = new Date()) {
 // adding, updating, and deleting habits, and saves changes back to AsyncStorage.
 // It also handles loading errors and provides a retry mechanism.
 export function useHabits(accountId) {
-  const [habits, setHabits] = useState(() => {
-    const today = getDateKey();
-    return startingHabits.map((habit) => ({
-      ...habit,
-      completedDates: habit.completed ? [today] : [],
-    }));
-  });
+  const [habits, setHabits] = useState([]);
   const [habitsLoaded, setHabitsLoaded] = useState(false);
   const [isLoadingHabits, setIsLoadingHabits] = useState(true);
   const [habitsLoadError, setHabitsLoadError] = useState(null);
@@ -109,6 +103,7 @@ export function useHabits(accountId) {
           );
           setCompletionHistory(Array.from(historyById.values()));
         } else if (isMounted) {
+          setHabits([]);
           setCompletionHistory(loadedHistory);
         }
       } catch (error) {

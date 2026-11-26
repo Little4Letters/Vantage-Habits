@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText as Text } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
+import ScreenTutorial from "../components/ScreenTutorial.js";
 
 const notifications = [
   {
@@ -38,7 +39,7 @@ const notifications = [
   },
 ];
 
-export default function AlertsScreen({ navigation }) {
+export default function AlertsScreen({ navigation, accountId }) {
   const [morningReminder, setMorningReminder] = useState(true);
   const [eveningReminder, setEveningReminder] = useState(false);
   const [streakNotice, setStreakNotice] = useState(true);
@@ -53,6 +54,27 @@ export default function AlertsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScreenTutorial
+        accountId={accountId}
+        screenKey="alerts"
+        steps={[
+          {
+            icon: "notifications-outline",
+            title: "Choose reminders",
+            text: "Turn morning, evening, and streak reminders on or off.",
+          },
+          {
+            icon: "mail-unread-outline",
+            title: "Check live alerts",
+            text: "Open an alert to mark it read and review your latest updates.",
+          },
+          {
+            icon: "shield-checkmark-outline",
+            title: "Keep it personal",
+            text: "Reminder settings stay available for the current account.",
+          },
+        ]}
+      />
       <ScrollView
         contentContainerStyle={styles.screenContent}
         showsVerticalScrollIndicator={false}

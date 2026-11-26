@@ -15,6 +15,7 @@ import {
 } from "../components/Typography.js";
 import HabitPresetCard from "../components/HabitPresetCard.js";
 import HabitGlyph from "../components/HabitGlyph.js";
+import ScreenTutorial from "../components/ScreenTutorial.js";
 import { palette as theme } from "../theme.js";
 
 const colors = [
@@ -153,6 +154,7 @@ export default function AddHabitScrn({
   onAddHabit,
   onUpdateHabit,
   onDeleteHabit,
+  accountId,
 }) {
   const [mode, setMode] = useState("create");
   const [title, setTitle] = useState("");
@@ -252,6 +254,27 @@ export default function AddHabitScrn({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScreenTutorial
+        accountId={accountId}
+        screenKey="add"
+        steps={[
+          {
+            icon: "create-outline",
+            title: "Name the habit",
+            text: "Enter a clear title and choose how often it should repeat.",
+          },
+          {
+            icon: "color-palette-outline",
+            title: "Make it yours",
+            text: "Choose an icon and color so the habit is easy to recognize.",
+          },
+          {
+            icon: "checkmark-circle-outline",
+            title: "Save or edit",
+            text: "Save a new habit, or open My Habits to update or delete it.",
+          },
+        ]}
+      />
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : undefined}

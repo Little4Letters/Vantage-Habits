@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View, TouchableOpacity } from "react-native";
+import {
+  Animated,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -7,28 +14,14 @@ import {
   AppTextInput as TextInput,
 } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
-
-type ProfileScreenProps = {
-  profile?: {
-    name?: string;
-    email?: string;
-    gender?: string;
-    birthDate?: string;
-  } | null;
-  onUpdateProfile: (profile: {
-    name: string;
-    email: string;
-    gender: string;
-    birthDate: string;
-  }) => Promise<void>;
-  onLogout: () => Promise<void>;
-};
+import ScreenTutorial from "../components/ScreenTutorial.js";
 
 export default function ProfileScreen({
   profile,
   onUpdateProfile,
   onLogout,
-}: ProfileScreenProps) {
+  accountId,
+}) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile?.name || "Habit Builder");
   const [email, setEmail] = useState(profile?.email || "");
@@ -37,6 +30,7 @@ export default function ProfileScreen({
     profile?.birthDate || "12 / 05 / 1996",
   );
   const [activeAction, setActiveAction] = useState("");
+  const [logoutScale] = useState(() => new Animated.Value(1));
 
   // The ProfileScreen component manages the user's profile information, allowing them to view and edit their account details.
   // It includes state variables for editing mode, name, email, gender, birth date, and active action. The component renders a profile banner, a list of menu items for various actions, and an editing form when in editing mode.
@@ -60,6 +54,27 @@ export default function ProfileScreen({
       style={[styles.safeArea, !editing && styles.profileSafeArea]}
       edges={["top"]}
     >
+      <ScreenTutorial
+        accountId={accountId}
+        screenKey="profile"
+        steps={[
+          {
+            icon: "person-outline",
+            title: "Review your account",
+            text: "Your name and email appear at the top of this screen.",
+          },
+          {
+            icon: "create-outline",
+            title: "Edit account details",
+            text: "Use Edit account to update your profile information.",
+          },
+          {
+            icon: "log-out-outline",
+            title: "Sign out safely",
+            text: "Use Logout to end the current session. Your saved habits remain with this account.",
+          },
+        ]}
+      />
       <ScrollView
         contentContainerStyle={styles.screenContent}
         keyboardShouldPersistTaps="handled"
@@ -209,12 +224,30 @@ export default function ProfileScreen({
                   accessibilityRole="button"
                   onPress={async () => {
                     if (item.title === "Logout") {
-                      await onLogout();
+                      Animated.sequence([
+                        Animated.timing(logoutScale, {
+                          toValue: 0.96,
+                          duration: 90,
+                          useNativeDriver: Platform.OS !== "web",
+                        }),
+                        Animated.timing(logoutScale, {
+                          toValue: 1,
+                          duration: 140,
+                          useNativeDriver: Platform.OS !== "web",
+                        }),
+                      ]).start(async () => {
+                        await onLogout();
+                      });
                     } else {
                       setActiveAction(item.title);
                     }
                   }}
-                  style={styles.menuItem}
+                  style={[
+                    styles.menuItem,
+                    item.title === "Logout" && {
+                      transform: [{ scale: logoutScale }],
+                    },
+                  ]}
                 >
                   <View style={styles.menuIcon}>
                     <Ionicons name={item.icon} size={16} color={theme.white} />

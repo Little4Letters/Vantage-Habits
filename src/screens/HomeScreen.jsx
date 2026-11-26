@@ -1,18 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  Animated,
   View,
   Image,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Modal,
-  Platform,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HabitSec from "../components/HabitsSec.js";
+import ScreenTutorial from "../components/ScreenTutorial.js";
 import { AppText as Text } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
 
@@ -93,46 +90,7 @@ export default function HomeScreen({
   const [selectedDate, setSelectedDate] = useState(today);
   const [showMonth, setShowMonth] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
-  const [tutorialVisible, setTutorialVisible] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [tutorialFade] = useState(() => new Animated.Value(0));
   const monthDates = getMonthDates(visibleMonth);
-
-  useEffect(() => {
-    if (!accountId) return;
-
-    let active = true;
-    AsyncStorage.getItem(`@vantage-habits/tutorial:${accountId}`).then(
-      (seen) => {
-        if (active && !seen) {
-          setTutorialVisible(true);
-          Animated.timing(tutorialFade, {
-            toValue: 1,
-            duration: 260,
-            useNativeDriver: Platform.OS !== "web",
-          }).start();
-        }
-      },
-    );
-
-    return () => {
-      active = false;
-    };
-  }, [accountId, tutorialFade]);
-
-  const finishTutorial = async () => {
-    if (accountId) {
-      await AsyncStorage.setItem(
-        `@vantage-habits/tutorial:${accountId}`,
-        "seen",
-      );
-    }
-    Animated.timing(tutorialFade, {
-      toValue: 0,
-      duration: 180,
-      useNativeDriver: true,
-    }).start(() => setTutorialVisible(false));
-  };
   const isCompletedOnSelectedDate = (habit) =>
     (habit.completedDates || []).includes(selectedDate) ||
     (selectedDate === today && habit.completed);
@@ -143,63 +101,11 @@ export default function HomeScreen({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <Modal
-        transparent
-        visible={tutorialVisible}
-        animationType="fade"
-        onRequestClose={finishTutorial}
-      >
-        <View style={styles.tutorialBackdrop}>
-          <Animated.View
-            style={[styles.tutorialCard, { opacity: tutorialFade }]}
-          >
-            <Text style={styles.tutorialEyebrow}>
-              QUICK START {tutorialStep + 1} OF {tutorialSteps.length}
-            </Text>
-            <View style={styles.tutorialIconWrap}>
-              <Ionicons
-                name={tutorialSteps[tutorialStep].icon}
-                size={34}
-                color={theme.primary[500]}
-              />
-            </View>
-            <Text style={styles.tutorialTitle}>
-              {tutorialSteps[tutorialStep].title}
-            </Text>
-            <Text style={styles.tutorialText}>
-              {tutorialSteps[tutorialStep].text}
-            </Text>
-            <View style={styles.tutorialDots}>
-              {tutorialSteps.map((step, index) => (
-                <View
-                  key={step.title}
-                  style={[
-                    styles.tutorialDot,
-                    index === tutorialStep && styles.tutorialDotActive,
-                  ]}
-                />
-              ))}
-            </View>
-            <TouchableOpacity
-              accessibilityRole="button"
-              onPress={() => {
-                if (tutorialStep === tutorialSteps.length - 1) {
-                  finishTutorial();
-                } else {
-                  setTutorialStep((step) => step + 1);
-                }
-              }}
-              style={styles.tutorialButton}
-            >
-              <Text style={styles.tutorialButtonText}>
-                {tutorialStep === tutorialSteps.length - 1
-                  ? "Start tracking"
-                  : "Next"}
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-      </Modal>
+      <ScreenTutorial
+        accountId={accountId}
+        screenKey="home"
+        steps={tutorialSteps}
+      />
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}

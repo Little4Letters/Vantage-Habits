@@ -51,6 +51,7 @@ export default function LoginScreen({
   const [screenFade] = useState(() => new Animated.Value(0));
   const [screenLift] = useState(() => new Animated.Value(18));
   const [buttonScale] = useState(() => new Animated.Value(1));
+  const [backScale] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
     Animated.parallel([
@@ -221,8 +222,33 @@ export default function LoginScreen({
               accessibilityRole="button"
               accessibilityLabel="Back to welcome screen"
               hitSlop={10}
-              onPress={onBack}
-              style={styles.backButton}
+              onPress={() => {
+                Animated.parallel([
+                  Animated.timing(screenFade, {
+                    toValue: 0,
+                    duration: 180,
+                    useNativeDriver: Platform.OS !== "web",
+                  }),
+                  Animated.timing(screenLift, {
+                    toValue: 12,
+                    duration: 180,
+                    useNativeDriver: Platform.OS !== "web",
+                  }),
+                  Animated.sequence([
+                    Animated.timing(backScale, {
+                      toValue: 0.88,
+                      duration: 70,
+                      useNativeDriver: Platform.OS !== "web",
+                    }),
+                    Animated.timing(backScale, {
+                      toValue: 1,
+                      duration: 110,
+                      useNativeDriver: Platform.OS !== "web",
+                    }),
+                  ]),
+                ]).start(onBack);
+              }}
+              style={[styles.backButton, { transform: [{ scale: backScale }] }]}
             >
               <Ionicons name="chevron-back" size={20} color={colors.ink} />
             </TouchableOpacity>
