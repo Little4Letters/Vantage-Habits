@@ -10,7 +10,8 @@ export default function HabitPresetCard({
   selected,
   onPress,
 }) {
-  //
+  // Accessibility: Provide accessibility labels and states for better screen reader support
+
   return (
     <TouchableOpacity
       accessibilityRole="button"

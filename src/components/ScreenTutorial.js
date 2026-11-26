@@ -1,3 +1,6 @@
+// ScreenTutorial.js
+// Tutorial screen component for displaying on boarding steps
+
 import { useEffect, useState } from "react";
 import {
   Animated,
@@ -7,15 +10,21 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+// imports made for accessibility and theming
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { AppText as Text } from "./Typography.js";
 import { palette as theme } from "../theme.js";
 
+// Tutorial screen component for displaying on boarding steps
+
 export default function ScreenTutorial({ accountId, screenKey, steps }) {
   const [visible, setVisible] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [fade] = useState(() => new Animated.Value(0));
+
+  // When the component mounts, check if the tutorial has been seen for the given accountId and screenKey. If not, show the tutorial modal.
 
   useEffect(() => {
     if (!accountId || !screenKey) return;
@@ -40,6 +49,8 @@ export default function ScreenTutorial({ accountId, screenKey, steps }) {
     };
   }, [accountId, screenKey, fade]);
 
+  // This lies the function to finish the tutorial, which sets the tutorial as seen in AsyncStorage and fades out the modal.
+
   const finishTutorial = async () => {
     if (accountId) {
       await AsyncStorage.setItem(
@@ -55,10 +66,12 @@ export default function ScreenTutorial({ accountId, screenKey, steps }) {
     }).start(() => setVisible(false));
   };
 
+  // If the tutorial is not visible, return null
   if (!visible) return null;
 
   const step = steps[stepIndex];
 
+  // Render the tutorial modal concepts
   return (
     <Modal
       transparent
