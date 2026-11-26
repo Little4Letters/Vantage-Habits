@@ -1,3 +1,10 @@
+// What is this file for?
+// This file provides functions for managing user authentication and profile data in a React Native application.
+// It uses AsyncStorage and SecureStore to securely store account information, session data, and user profiles.
+
+// The functions include creating an account, logging in, retrieving the current session account, clearing the session,
+// loading and saving the user profile, and hashing passwords for secure storage.
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import * as Crypto from "expo-crypto";
