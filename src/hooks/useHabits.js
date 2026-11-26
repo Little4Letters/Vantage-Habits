@@ -48,6 +48,11 @@ export function getDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+// The useHabits hook manages the state of habits and their completion history.
+// It loads saved habits from AsyncStorage, allows toggling habit completion as follows:
+
+// adding, updating, and deleting habits, and saves changes back to AsyncStorage.
+// It also handles loading errors and provides a retry mechanism.
 export function useHabits() {
   const [habits, setHabits] = useState(() => {
     const today = getDateKey();
@@ -70,12 +75,14 @@ export function useHabits() {
       setIsLoadingHabits(true);
       setHabitsLoadError(null);
 
+      // Load habits and completion history in parallel, then normalize the data.
       try {
         const [loadedHabits, loadedHistory] = await Promise.all([
           loadStoredHabits(),
           loadStoredCompletionHistory(),
         ]);
 
+        // If the component is still mounted, update the state with the loaded habits and completion history.
         if (isMounted && loadedHabits) {
           const normalizedHabits = loadedHabits.map((habit) => ({
             ...habit,
@@ -93,6 +100,7 @@ export function useHabits() {
             })),
           );
 
+          // Combine the loaded history and derived history, ensuring no duplicates, and update the completion history state.
           const historyById = new Map(
             [...loadedHistory, ...derivedHistory].map((entry) => [
               entry.id,
