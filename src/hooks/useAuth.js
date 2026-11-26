@@ -53,6 +53,10 @@ export function useAuth() {
     };
   }, []);
 
+  // The `register` function creates a new user account with the provided account details (name, email, password).
+
+  // It saves the account and loads the associated profile, updating the state accordingly.
+  // The function returns the created account for further use.
   const register = async (accountDetails) => {
     const createdAccount = await createAccount(accountDetails);
     const savedProfile = await loadProfile();
@@ -61,6 +65,10 @@ export function useAuth() {
     return createdAccount;
   };
 
+  // The `login` function authenticates a user with the provided email and password.
+  // It verifies the credentials, saves the session, and loads the associated profile, updating the state accordingly.
+  // The function returns the signed-in account for further use.
+
   const login = async (email, password) => {
     const signedInAccount = await loginAccount(email, password);
     const savedProfile = await loadProfile();
@@ -68,6 +76,9 @@ export function useAuth() {
     setProfile(savedProfile);
     return signedInAccount;
   };
+
+  // The `updateProfile` function updates the user's profile information with the provided `nextProfile` data.
+  // It saves the updated profile to storage and updates the account state with the new name and email.
 
   const updateProfile = async (nextProfile) => {
     await saveProfile(nextProfile);
@@ -78,6 +89,8 @@ export function useAuth() {
         : current,
     );
   };
+
+  // The `logout` function clears the current user session and resets the account state to null, effectively logging the user out of the application.
 
   const logout = async () => {
     await clearSession();

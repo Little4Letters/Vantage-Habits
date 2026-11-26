@@ -150,6 +150,9 @@ export function useHabits() {
     saveHabits();
   }, [habits, completionHistory, habitsLoaded]);
 
+  // The `toggleHabit` function toggles the completion status of a habit for a specific date (defaulting to today).
+  // It updates the habit's completedDates array and the completion history accordingly.
+
   const toggleHabit = (habitId, date = getDateKey()) => {
     setHabits((current) =>
       current.map((habit) =>
@@ -163,6 +166,8 @@ export function useHabits() {
                     (completedDate) => completedDate !== date,
                   )
                 : [...completedDates, date];
+
+              // Update the completion history state based on the toggled habit's completion status for the specified date.
 
               setCompletionHistory((history) => {
                 const entryId = `${habitId}:${date}`;
