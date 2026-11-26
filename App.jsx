@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -102,6 +103,76 @@ function CustomTabBar({ state, navigation }) {
           );
         })}
       </View>
+    </View>
+  );
+}
+
+function LogoutTransition({ onComplete }) {
+  const [opacity] = useState(() => new Animated.Value(0));
+  const [translateY] = useState(() => new Animated.Value(14));
+  const [iconScale] = useState(() => new Animated.Value(0.75));
+
+  useEffect(() => {
+    const entrance = Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 420,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+      Animated.spring(translateY, {
+        toValue: 0,
+        friction: 7,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+      Animated.spring(iconScale, {
+        toValue: 1,
+        friction: 5,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+    ]);
+
+    entrance.start();
+    const timeout = setTimeout(onComplete, 2600);
+
+    return () => {
+      entrance.stop();
+      clearTimeout(timeout);
+    };
+  }, [iconScale, onComplete, opacity, translateY]);
+
+  return (
+    <View style={styles.logoutTransition}>
+      <Animated.View
+        style={[
+          styles.logoutTransitionContent,
+          {
+            opacity,
+            transform: [{ translateY }],
+          },
+        ]}
+      >
+        <Animated.View
+          style={[
+            styles.logoutIcon,
+            { transform: [{ scale: iconScale }] },
+          ]}
+        >
+          <Ionicons name="checkmark-done" size={34} color={theme.primary[600]} />
+        </Animated.View>
+        <Text style={styles.logoutEyebrow}>UNTIL NEXT TIME</Text>
+        <Text style={styles.logoutTitle}>Thanks for showing up for yourself.</Text>
+        <Text style={styles.logoutMessage}>
+          Every small step counts. Your habits and progress will be here when
+          you’re ready to continue.
+        </Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={onComplete}
+          style={styles.logoutContinueButton}
+        >
+          <Text style={styles.logoutContinueText}>Continue</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
@@ -222,6 +293,7 @@ export default function App() {
   const [entryScreen, setEntryScreen] = useState("onboarding");
   const [loginMode, setLoginMode] = useState("login");
   const [isNewAccount, setIsNewAccount] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const {
     account,
     profile,
@@ -231,6 +303,10 @@ export default function App() {
     updateProfile,
     logout,
   } = useAuth();
+  const finishLogout = useCallback(() => {
+    setIsLoggingOut(false);
+    setEntryScreen("onboarding");
+  }, []);
 
   if (!fontsLoaded || isAuthLoading) {
     return (
@@ -244,7 +320,9 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <NavigationContainer>
-        {account ? (
+        {isLoggingOut ? (
+          <LogoutTransition onComplete={finishLogout} />
+        ) : account ? (
           <HabitTabs
             accountId={account.id}
             accountName={account.name}
@@ -252,9 +330,14 @@ export default function App() {
             isNewAccount={isNewAccount}
             onUpdateProfile={updateProfile}
             onLogout={async () => {
-              await logout();
-              setIsNewAccount(false);
-              setEntryScreen("onboarding");
+              setIsLoggingOut(true);
+              try {
+                await logout();
+                setIsNewAccount(false);
+              } catch (error) {
+                setIsLoggingOut(false);
+                throw error;
+              }
             }}
           />
         ) : entryScreen === "login" ? (
@@ -288,6 +371,59 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  logoutTransition: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    backgroundColor: theme.natural[50],
+  },
+  logoutTransitionContent: {
+    width: "100%",
+    maxWidth: 390,
+    alignItems: "center",
+    paddingHorizontal: 18,
+  },
+  logoutIcon: {
+    width: 82,
+    height: 82,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 41,
+    backgroundColor: theme.white,
+    marginBottom: 22,
+  },
+  logoutEyebrow: {
+    color: theme.primary[600],
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.4,
+  },
+  logoutTitle: {
+    color: theme.tertiary[900],
+    fontSize: 25,
+    fontWeight: "800",
+    textAlign: "center",
+    marginTop: 10,
+  },
+  logoutMessage: {
+    color: theme.natural[500],
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: "center",
+    marginTop: 12,
+  },
+  logoutContinueButton: {
+    minWidth: 150,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 24,
+    backgroundColor: theme.tertiary[900],
+    marginTop: 26,
+    paddingHorizontal: 24,
+  },
+  logoutContinueText: { color: theme.white, fontSize: 13, fontWeight: "700" },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
