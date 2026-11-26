@@ -39,6 +39,11 @@ import HomeScreen from "./src/screens/HomeScreen.jsx";
 import AddHabitScrn from "./src/screens/AddHabitScrn.jsx";
 import ProgressScreen from "./src/screens/ProgressScrn.jsx";
 import AlertsScreen from "./src/screens/NotificationScrn.jsx";
+
+// CONDITIONS!!! The following are;
+
+// ProfileScrn.jsx contains TypeScript syntax, so avoid named-export parsing for this default import.
+// eslint-disable-next-line import/namespace, import/no-named-as-default, import/no-named-as-default-member
 import ProfileScreen from "./src/screens/ProfileScrn.jsx";
 import LoginScreen from "./src/screens/LoginScreen.tsx";
 import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
@@ -114,6 +119,10 @@ function CustomTabBar({ state, navigation }) {
   );
 }
 
+// AsyncStorage is used to persist habit data and completion history across app sessions.
+
+// The useHabits hook manages the state of habits, including loading from storage, toggling completion, and adding/updating/deleting habits.
+// The useAuth hook manages user authentication, including session restoration, login, registration, profile updates, and logout.
 function HabitTabs({ profile, onUpdateProfile, onLogout }) {
   const {
     habits,
