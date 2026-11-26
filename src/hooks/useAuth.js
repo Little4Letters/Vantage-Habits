@@ -1,3 +1,10 @@
+// This custom React hook, `useAuth`, manages user authentication state and profile information.
+
+// It provides functions for registering, logging in, updating the profile, and logging out.
+// The hook also handles session restoration on component mount and maintains loading state during asynchronous operations.
+
+// Likely the operators san Async that any data follows the CRUD element
+
 import { useEffect, useState } from "react";
 import {
   clearSession,
@@ -8,6 +15,14 @@ import {
   saveProfile,
 } from "../services/authStorage";
 
+// The `useAuth` hook manages user authentication and profile state.
+// It initializes state variables for the account, profile, and loading status.
+
+// On component mount, it attempts to restore the user session by fetching the session account and profile from storage.
+// The hook provides functions to register a new account, log in an existing account, update the user's profile, and log out.
+// Each function updates the relevant state variables accordingly.
+
+// The hook returns the current account, profile, loading status, and the authentication functions for use in components.
 export function useAuth() {
   const [account, setAccount] = useState(null);
   const [profile, setProfile] = useState(null);
