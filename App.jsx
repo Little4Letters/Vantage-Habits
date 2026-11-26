@@ -44,6 +44,7 @@ import LoginScreen from "./src/screens/LoginScreen.tsx";
 import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
 import { palette as theme } from "./src/theme.js";
 import { useHabits } from "./src/hooks/useHabits";
+import { useAuth } from "./src/hooks/useAuth";
 
 const Tab = createBottomTabNavigator();
 
@@ -113,7 +114,7 @@ function CustomTabBar({ state, navigation }) {
   );
 }
 
-function HabitTabs() {
+function HabitTabs({ profile, onUpdateProfile, onLogout }) {
   const {
     habits,
     isLoadingHabits,
@@ -185,7 +186,16 @@ function HabitTabs() {
         )}
       </Tab.Screen>
       <Tab.Screen name="Alerts" component={AlertsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile">
+        {(props) => (
+          <ProfileScreen
+            {...props}
+            profile={profile}
+            onUpdateProfile={onUpdateProfile}
+            onLogout={onLogout}
+          />
+        )}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -199,9 +209,19 @@ export default function App() {
     NunitoSans_800ExtraBold,
   });
   const [entryScreen, setEntryScreen] = useState("onboarding");
+  const [loginMode, setLoginMode] = useState("login");
+  const {
+    account,
+    profile,
+    isLoading: isAuthLoading,
+    register,
+    login,
+    updateProfile,
+    logout,
+  } = useAuth();
 
-  // ADDED: Show a loading screen until the fonts are ready
-  if (!fontsLoaded) {
+  // Loading state for fonts and restored authentication/session data.
+  if (!fontsLoaded || isAuthLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.primary[600]} />
@@ -213,15 +233,39 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <NavigationContainer>
-        {entryScreen === "app" ? (
-          <HabitTabs />
+        {account ? (
+          <HabitTabs
+            profile={profile}
+            onUpdateProfile={updateProfile}
+            onLogout={async () => {
+              await logout();
+              setEntryScreen("onboarding");
+            }}
+          />
         ) : entryScreen === "login" ? (
           <LoginScreen
+            initialMode={loginMode}
             onBack={() => setEntryScreen("onboarding")}
-            onEnterApp={() => setEntryScreen("app")}
+            onLogin={async (email, password) => {
+              await login(email, password);
+              setEntryScreen("app");
+            }}
+            onRegister={async (details) => {
+              await register(details);
+              setEntryScreen("app");
+            }}
           />
         ) : (
-          <OnboardingScreen onLogin={() => setEntryScreen("login")} />
+          <OnboardingScreen
+            onLogin={() => {
+              setLoginMode("login");
+              setEntryScreen("login");
+            }}
+            onCreateAccount={() => {
+              setLoginMode("register");
+              setEntryScreen("login");
+            }}
+          />
         )}
       </NavigationContainer>
     </SafeAreaProvider>

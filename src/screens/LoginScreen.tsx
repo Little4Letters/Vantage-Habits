@@ -14,8 +14,14 @@ import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type LoginScreenProps = {
+  initialMode?: "login" | "register";
   onBack: () => void;
-  onEnterApp: () => void;
+  onLogin: (email: string, password: string) => Promise<void>;
+  onRegister: (details: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
 };
 
 const colors = {
@@ -27,10 +33,19 @@ const colors = {
   white: "#FFFFFF",
 };
 
-export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
-  const [email, setEmail] = useState("designer.wrteam@gmail.com");
+export default function LoginScreen({
+  initialMode = "login",
+  onBack,
+  onLogin,
+  onRegister,
+}: LoginScreenProps) {
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const showPreviewMessage = (featureName: string) => {
     Alert.alert(
@@ -40,16 +55,37 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
     );
   };
 
-  // For preview purposes only kay waray back end pa; using this function
-  const previewLogin = () => {
-    Alert.alert(
-      "Preview only",
-      "No credentials will be sent or stored. Continue to Vantage Habits?",
-      [
-        { text: "Stay here", style: "cancel" },
-        { text: "Continue", onPress: onEnterApp },
-      ],
-    );
+  const submitAuth = async () => {
+    if (!email.trim() || !password) {
+      Alert.alert("Missing details", "Enter your email and password.");
+      return;
+    }
+    if (mode === "register") {
+      if (!name.trim()) {
+        Alert.alert("Missing name", "Enter your name.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert("Password mismatch", "Both passwords must match.");
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (mode === "register") {
+        await onRegister({ name: name.trim(), email, password });
+      } else {
+        await onLogin(email, password);
+      }
+    } catch (error) {
+      Alert.alert(
+        mode === "register" ? "Account creation failed" : "Login failed",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -78,13 +114,35 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
             </View>
 
             <View style={styles.header}>
-              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.title}>
+                {mode === "register" ? "Create Account" : "Welcome Back"}
+              </Text>
               <Text style={styles.subtitle}>
-                Login to your account with your Email{"\n"}and Password
+                {mode === "register"
+                  ? "Create your account with your Email and Password"
+                  : "Login to your account with your Email\nand Password"}
               </Text>
             </View>
 
             <View style={styles.form}>
+              {mode === "register" && (
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="person-outline"
+                    size={19}
+                    color={colors.muted}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    accessibilityLabel="Name"
+                    placeholder="Enter name"
+                    placeholderTextColor="#A7A7AE"
+                    style={styles.input}
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
+              )}
               <View style={styles.inputWrapper}>
                 <Ionicons
                   name="mail-outline"
@@ -129,7 +187,7 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
                   textContentType="password"
                   value={password}
                   onChangeText={setPassword}
-                  onSubmitEditing={previewLogin}
+                  onSubmitEditing={submitAuth}
                 />
                 <TouchableOpacity
                   accessibilityRole="button"
@@ -149,20 +207,51 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={() => showPreviewMessage("Password recovery")}
-                style={styles.forgotButton}
-              >
-                <Text style={styles.forgotText}>Forgot Password?</Text>
-              </TouchableOpacity>
+              {mode === "register" && (
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={19}
+                    color={colors.muted}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    accessibilityLabel="Confirm password"
+                    autoCapitalize="none"
+                    placeholder="Confirm password"
+                    placeholderTextColor="#A7A7AE"
+                    secureTextEntry
+                    style={styles.input}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    onSubmitEditing={submitAuth}
+                  />
+                </View>
+              )}
+
+              {mode === "login" && (
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  onPress={() => Alert.alert("Password recovery", "Password recovery requires a server-backed account service.")}
+                  style={styles.forgotButton}
+                >
+                  <Text style={styles.forgotText}>Forgot Password?</Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 accessibilityRole="button"
-                onPress={previewLogin}
+                disabled={isSubmitting}
+                onPress={submitAuth}
                 style={styles.loginButton}
               >
-                <Text style={styles.loginButtonText}>Login</Text>
+                <Text style={styles.loginButtonText}>
+                  {isSubmitting
+                    ? "Please wait..."
+                    : mode === "register"
+                      ? "Create Account"
+                      : "Login"}
+                </Text>
               </TouchableOpacity>
 
               <View style={styles.dividerRow}>
@@ -206,9 +295,15 @@ export default function LoginScreen({ onBack, onEnterApp }: LoginScreenProps) {
                 </Text>
                 <TouchableOpacity
                   accessibilityRole="button"
-                  onPress={() => showPreviewMessage("Account creation")}
+                  onPress={() =>
+                    setMode((current) =>
+                      current === "login" ? "register" : "login",
+                    )
+                  }
                 >
-                  <Text style={styles.createText}>Create Now</Text>
+                  <Text style={styles.createText}>
+                    {mode === "register" ? "Back to Login" : "Create Now"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

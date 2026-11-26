@@ -1,5 +1,4 @@
 import {
-  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -12,16 +11,13 @@ import { palette as theme } from "../theme.js";
 
 type OnboardingScreenProps = {
   onLogin: () => void;
+  onCreateAccount: () => void;
 };
 
-export default function OnboardingScreen({ onLogin }: OnboardingScreenProps) {
-  const showCreateAccountNotice = () => {
-    Alert.alert(
-      "Front-end preview",
-      "Account creation is not connected yet. You can continue with the preview or sign in to the demo screen.",
-      [{ text: "OK" }],
-    );
-  };
+export default function OnboardingScreen({
+  onLogin,
+  onCreateAccount,
+}: OnboardingScreenProps) {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
@@ -70,7 +66,7 @@ export default function OnboardingScreen({ onLogin }: OnboardingScreenProps) {
             </TouchableOpacity>
             <TouchableOpacity
               accessibilityRole="button"
-              onPress={showCreateAccountNotice}
+              onPress={onCreateAccount}
               style={styles.createButton}
             >
               <Text style={styles.createButtonText}>Create new account</Text>

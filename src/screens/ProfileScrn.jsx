@@ -8,13 +8,34 @@ import {
 } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
 
-// Export default function ProfileScreen() {
-export default function ProfileScreen() {
+type ProfileScreenProps = {
+  profile?: {
+    name?: string;
+    email?: string;
+    gender?: string;
+    birthDate?: string;
+  } | null;
+  onUpdateProfile: (profile: {
+    name: string;
+    email: string;
+    gender: string;
+    birthDate: string;
+  }) => Promise<void>;
+  onLogout: () => Promise<void>;
+};
+
+export default function ProfileScreen({
+  profile,
+  onUpdateProfile,
+  onLogout,
+}: ProfileScreenProps) {
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState("Habit Builder");
-  const [email, setEmail] = useState("habit.builder@email.com");
-  const [gender, setGender] = useState("Male");
-  const [birthDate, setBirthDate] = useState("12 / 05 / 1996");
+  const [name, setName] = useState(profile?.name || "Habit Builder");
+  const [email, setEmail] = useState(profile?.email || "");
+  const [gender, setGender] = useState(profile?.gender || "Male");
+  const [birthDate, setBirthDate] = useState(
+    profile?.birthDate || "12 / 05 / 1996",
+  );
   const [activeAction, setActiveAction] = useState("");
 
   // The ProfileScreen component manages the user's profile information, allowing them to view and edit their account details.
@@ -149,7 +170,10 @@ export default function ProfileScreen() {
 
             <TouchableOpacity
               accessibilityRole="button"
-              onPress={() => setEditing(false)}
+              onPress={async () => {
+                await onUpdateProfile({ name, email, gender, birthDate });
+                setEditing(false);
+              }}
               style={styles.updateButton}
             >
               <Text style={styles.updateButtonText}>Update</Text>
@@ -183,7 +207,13 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   key={item.title}
                   accessibilityRole="button"
-                  onPress={() => setActiveAction(item.title)}
+                  onPress={async () => {
+                    if (item.title === "Logout") {
+                      await onLogout();
+                    } else {
+                      setActiveAction(item.title);
+                    }
+                  }}
                   style={styles.menuItem}
                 >
                   <View style={styles.menuIcon}>
