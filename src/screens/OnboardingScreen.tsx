@@ -75,7 +75,11 @@ export default function OnboardingScreen({
 
         //Main container san bug-os nga screen.
         <View style={styles.content}>
+
+          //ine an section san bug-os nga screen
           <View style={styles.illustration}>
+
+            
             <View style={[styles.sideCard, styles.leftSideCard]} />
             <View style={[styles.sideCard, styles.rightSideCard]} />
 
