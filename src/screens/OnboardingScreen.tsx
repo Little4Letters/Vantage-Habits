@@ -138,7 +138,11 @@ export default function OnboardingScreen({
                       resizeMode="cover"
                       style={styles.cardImage}
                     />
+
+                    // Transparent nga color overlay para mas maopay an itsura san image
                     <View style={styles.imageTint} />
+
+                    // Label san kada habit, sugad san Reading ngan Movement #.
                     <View style={styles.hashtagBadge}>
                       <Text style={styles.hashtagText}>{habit.label}</Text>
                     </View>
