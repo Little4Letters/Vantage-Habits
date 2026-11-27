@@ -72,6 +72,8 @@ export default function OnboardingScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+
+        //Main container san bug-os nga screen.
         <View style={styles.content}>
           <View style={styles.illustration}>
             <View style={[styles.sideCard, styles.leftSideCard]} />
