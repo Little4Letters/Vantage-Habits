@@ -120,6 +120,8 @@ export default function OnboardingScreen({
                   }
                 }}
               >
+
+                //ginpapakita an ngatanan nga habit images gamit an map.
                 {habitShowcase.map((habit) => (
                   <View
                     key={habit.label}
