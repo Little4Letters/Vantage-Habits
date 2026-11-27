@@ -112,6 +112,8 @@ export default function OnboardingScreen({
                         ),
                       ),
                     );
+
+                    //gin uupdate an active image index
                     setActiveHabit((current) =>
                       current === nextIndex ? current : nextIndex,
                     );
