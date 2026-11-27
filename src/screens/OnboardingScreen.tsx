@@ -83,6 +83,7 @@ export default function OnboardingScreen({
             <View style={[styles.sideCard, styles.leftSideCard]} />
             <View style={[styles.sideCard, styles.rightSideCard]} />
 
+            //main card nga may sulod nga image carousel
             <View style={styles.mainCard}>
               <ScrollView
                 horizontal
