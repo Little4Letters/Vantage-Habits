@@ -67,7 +67,7 @@ export default function OnboardingScreen({
     // SafeAreaView para diri matabunan san phone status bar an UI
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
 
-      // ine an para sa scrollView para ma scroll an page kon diri maigo sa screen.
+    // ine an para sa scrollView para ma scroll an page kon diri maigo sa screen.
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
