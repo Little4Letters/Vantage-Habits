@@ -79,7 +79,7 @@ export default function OnboardingScreen({
           //ine an section san bug-os nga screen
           <View style={styles.illustration}>
 
-            
+            //ine para sa pa swap an mga habit images
             <View style={[styles.sideCard, styles.leftSideCard]} />
             <View style={[styles.sideCard, styles.rightSideCard]} />
 
