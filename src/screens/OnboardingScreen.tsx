@@ -44,6 +44,8 @@ const habitShowcase = [
   },
 ];
 
+// Ini an props nga ginkikinahanglan san OnboardingScreen
+// An onLogin ngan onCreateAccount asya an functions nga tikang sa parent component
 type OnboardingScreenProps = {
   onLogin: () => void;
   onCreateAccount: () => void;
