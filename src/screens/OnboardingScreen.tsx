@@ -101,6 +101,8 @@ export default function OnboardingScreen({
                 //ine an kalaksihon or function nagbabantay kon nag i slide an user san images
                 onScroll={(event) => {
                   if (carouselWidth > 0) {
+
+                    //ine an gin papakita kun an image an yana an nakikita
                     const nextIndex = Math.min(
                       habitShowcase.length - 1,
                       Math.max(
