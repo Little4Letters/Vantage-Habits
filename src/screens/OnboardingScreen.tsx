@@ -10,6 +10,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { palette as theme } from "../theme.js";
 
+// ine an mga habit na makikita mo sa screen mao an image carousel
 const habitShowcase = [
   {
     label: "#Reading",
@@ -43,6 +44,8 @@ const habitShowcase = [
   },
 ];
 
+// Ini an props nga ginkikinahanglan san OnboardingScreen
+// An onLogin ngan onCreateAccount asya an functions nga tikang sa parent component
 type OnboardingScreenProps = {
   onLogin: () => void;
   onCreateAccount: () => void;
@@ -52,20 +55,35 @@ export default function OnboardingScreen({
   onLogin,
   onCreateAccount,
 }: OnboardingScreenProps) {
+
+  // Ini nga useState nagtatago san current width san image carousel.
   const [carouselWidth, setCarouselWidth] = useState(0);
+
+  // Ini nga useState nagtatago san index san active nga habit image.
   const [activeHabit, setActiveHabit] = useState(0);
 
   return (
+
+    // SafeAreaView para diri matabunan san phone status bar an UI
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+
+    // ine an para sa scrollView para ma scroll an page kon diri maigo sa screen.
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+
+        //Main container san bug-os nga screen.
         <View style={styles.content}>
+
+          //ine an section san bug-os nga screen
           <View style={styles.illustration}>
+
+            //ine para sa pa swap an mga habit images
             <View style={[styles.sideCard, styles.leftSideCard]} />
             <View style={[styles.sideCard, styles.rightSideCard]} />
 
+            //main card nga may sulod nga image carousel
             <View style={styles.mainCard}>
               <ScrollView
                 horizontal
@@ -73,12 +91,18 @@ export default function OnboardingScreen({
                 directionalLockEnabled
                 showsHorizontalScrollIndicator={false}
                 style={styles.carousel}
+
+                //ginkukuha an actual width san carousel para sakto an kada iamge
                 onLayout={(event) =>
                   setCarouselWidth(event.nativeEvent.layout.width)
                 }
                 scrollEventThrottle={32}
+
+                //ine an kalaksihon or function nagbabantay kon nag i slide an user san images
                 onScroll={(event) => {
                   if (carouselWidth > 0) {
+
+                    //ine an gin papakita kun an image an yana an nakikita
                     const nextIndex = Math.min(
                       habitShowcase.length - 1,
                       Math.max(
@@ -88,12 +112,16 @@ export default function OnboardingScreen({
                         ),
                       ),
                     );
+
+                    //gin uupdate an active image index
                     setActiveHabit((current) =>
                       current === nextIndex ? current : nextIndex,
                     );
                   }
                 }}
               >
+
+                //ginpapakita an ngatanan nga habit images gamit an map.
                 {habitShowcase.map((habit) => (
                   <View
                     key={habit.label}
@@ -102,19 +130,27 @@ export default function OnboardingScreen({
                       { width: carouselWidth || "100%" },
                     ]}
                   >
+
+                    //asya ine an actual image san kada habit
                     <Image
                       accessibilityLabel={habit.description}
                       source={{ uri: habit.image }}
                       resizeMode="cover"
                       style={styles.cardImage}
                     />
+
+                    // Transparent nga color overlay para mas maopay an itsura san image
                     <View style={styles.imageTint} />
+
+                    // Label san kada habit, sugad san Reading ngan Movement #.
                     <View style={styles.hashtagBadge}>
                       <Text style={styles.hashtagText}>{habit.label}</Text>
                     </View>
                   </View>
                 ))}
               </ScrollView>
+
+              //Pagination dots nga nagpapakia kon pira na nga image an active
               <View
                 style={styles.pagination}
                 accessibilityLabel={`Habit image ${activeHabit + 1} of ${habitShowcase.length}`}
@@ -124,6 +160,8 @@ export default function OnboardingScreen({
                     <View
                       style={[
                         styles.paginationDot,
+
+                         // Kon active an image, mas halaba ngan mas klaro an dot.
                         activeHabit === index && styles.paginationDotActive,
                       ]}
                     />
@@ -133,6 +171,7 @@ export default function OnboardingScreen({
             </View>
           </View>
 
+          //Section para san title nagan desciption san appliacation.
           <View style={styles.textSection}>
             <Text style={styles.title}>Stay Tuned, Stay Healthy</Text>
             <Text style={styles.subtitle}>
@@ -141,7 +180,10 @@ export default function OnboardingScreen({
             </Text>
           </View>
 
+          //ine sa section para san Login ngan Create Account buttons
           <View style={styles.actions}>
+
+            //Login button: pagtapo sini, tatawagon an onLogin function
             <TouchableOpacity
               accessibilityRole="button"
               onPress={onLogin}
@@ -149,6 +191,8 @@ export default function OnboardingScreen({
             >
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
+
+            //Create Account button: pagtapo hini, tatawogon an onCreateAccount function.
             <TouchableOpacity
               accessibilityRole="button"
               onPress={onCreateAccount}
@@ -163,6 +207,7 @@ export default function OnboardingScreen({
   );
 }
 
+sytlesheet na nani ine
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: theme.white },
   scrollContent: {
