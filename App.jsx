@@ -31,10 +31,11 @@ import ProgressScreen from "./src/screens/ProgressScrn.jsx";
 import AlertsScreen from "./src/screens/NotificationScrn.jsx";
 import ProfileScreen from "./src/screens/ProfileScrn.jsx";
 import LoginScreen from "./src/screens/LoginScreen.tsx";
-import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
 import { palette as theme } from "./src/theme.js";
 import { useHabits } from "./src/hooks/useHabits.js";
 import { useAuth } from "./src/hooks/useAuth.js";
+
+const OnboardingScreen = require("./src/screens/OnboardingScreen.tsx").default;
 
 const Tab = createBottomTabNavigator();
 
