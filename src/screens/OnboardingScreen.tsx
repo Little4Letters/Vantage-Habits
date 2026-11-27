@@ -145,6 +145,8 @@ export default function OnboardingScreen({
                   </View>
                 ))}
               </ScrollView>
+
+              //Pagination dots nga nagpapakia kon pira na nga image an active
               <View
                 style={styles.pagination}
                 accessibilityLabel={`Habit image ${activeHabit + 1} of ${habitShowcase.length}`}
