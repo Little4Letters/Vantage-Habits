@@ -91,10 +91,14 @@ export default function OnboardingScreen({
                 directionalLockEnabled
                 showsHorizontalScrollIndicator={false}
                 style={styles.carousel}
+
+                //ginkukuha an actual width san carousel para sakto an kada iamge
                 onLayout={(event) =>
                   setCarouselWidth(event.nativeEvent.layout.width)
                 }
                 scrollEventThrottle={32}
+
+                //ine an kalaksihon or function nagbabantay kon nag i slide an user san images
                 onScroll={(event) => {
                   if (carouselWidth > 0) {
                     const nextIndex = Math.min(
