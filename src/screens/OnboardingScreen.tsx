@@ -55,7 +55,11 @@ export default function OnboardingScreen({
   onLogin,
   onCreateAccount,
 }: OnboardingScreenProps) {
+
+  // Ini nga useState nagtatago san current width san image carousel.
   const [carouselWidth, setCarouselWidth] = useState(0);
+
+  
   const [activeHabit, setActiveHabit] = useState(0);
 
   return (
