@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Platform,
@@ -16,6 +16,57 @@ import {
 import { palette as theme } from "../theme.js";
 import ScreenTutorial from "../components/ScreenTutorial.js";
 
+const detailPages = {
+  "About Us": [
+    {
+      heading: "Small steps, built into your day",
+      body: "Vantage Habits helps you create routines, check in each day, and see your progress over time.",
+    },
+    {
+      heading: "Make it your own",
+      body: "Create habits that matter to you, choose when to work on them, and use your progress history to celebrate consistency.",
+    },
+  ],
+  "Contact Us": [
+    {
+      heading: "We're here to help",
+      body: "For help with your habits or account, use the support channel provided with your copy of Vantage Habits. A direct support email is not configured in this version of the app.",
+    },
+    {
+      heading: "When you get in touch",
+      body: "Include a short description of the issue and your device type. Never share your password or other sensitive account information.",
+    },
+  ],
+  "Terms of Use": [
+    {
+      heading: "Using the app",
+      body: "Vantage Habits is a personal tool for creating habits and tracking your progress. Use it lawfully and keep your sign-in details private.",
+    },
+    {
+      heading: "Your information",
+      body: "You are responsible for the profile information and habit details you enter. Keep your device and account access secure.",
+    },
+    {
+      heading: "Availability",
+      body: "The app is provided as-is. Features may change, and we cannot guarantee uninterrupted access or that information stored on your device will always be available.",
+    },
+  ],
+  "Data Privacy": [
+    {
+      heading: "Information you enter",
+      body: "The app uses your name, email address, and account details to support your profile, along with the habits and completion history you choose to record.",
+    },
+    {
+      heading: "Where it is stored",
+      body: "Your account information and habit data are stored on your device. Account information uses secure device storage when available, with local storage as a fallback; habits and progress are stored locally.",
+    },
+    {
+      heading: "Your control",
+      body: "Signing out ends your current session but does not delete the profile or habit information saved on the device. Avoid entering sensitive information in habit names or notes.",
+    },
+  ],
+};
+
 export default function ProfileScreen({
   profile,
   onUpdateProfile,
@@ -31,6 +82,55 @@ export default function ProfileScreen({
   );
   const [activeAction, setActiveAction] = useState("");
   const [logoutScale] = useState(() => new Animated.Value(1));
+  const [detailTransition] = useState(() => new Animated.Value(0));
+  const [detailOpacity] = useState(() => new Animated.Value(0));
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+
+  const isDetailPage =
+    activeAction === "Rate Us 5 Star" ||
+    Object.prototype.hasOwnProperty.call(detailPages, activeAction);
+
+  useEffect(() => {
+    if (!isDetailPage) return undefined;
+
+    detailTransition.setValue(28);
+    detailOpacity.setValue(0);
+    Animated.parallel([
+      Animated.timing(detailTransition, {
+        toValue: 0,
+        duration: 230,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+      Animated.timing(detailOpacity, {
+        toValue: 1,
+        duration: 190,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+    ]).start();
+
+    return () => {
+      detailTransition.stopAnimation();
+      detailOpacity.stopAnimation();
+    };
+  }, [detailOpacity, detailTransition, isDetailPage]);
+
+  const closeDetailPage = () => {
+    Animated.parallel([
+      Animated.timing(detailTransition, {
+        toValue: 28,
+        duration: 190,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+      Animated.timing(detailOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: Platform.OS !== "web",
+      }),
+    ]).start(({ finished }) => {
+      if (finished) setActiveAction("");
+    });
+  };
 
   // The ProfileScreen component manages the user's profile information, allowing them to view and edit their account details.
   // It includes state variables for editing mode, name, email, gender, birth date, and active action. The component renders a profile banner, a list of menu items for various actions, and an editing form when in editing mode.
@@ -51,8 +151,11 @@ export default function ProfileScreen({
   // It returns a SafeAreaView that contains a ScrollView. Inside the ScrollView, it conditionally renders either the editing form or the profile view based on the editing state. The profile view includes a banner with user information and a list of menu items for various actions. The editing form allows users to update their name, email, gender, and birth date, with appropriate input fields and buttons for saving changes.
   return (
     <SafeAreaView
-      style={[styles.safeArea, !editing && styles.profileSafeArea]}
-      edges={["top"]}
+      style={[
+        styles.safeArea,
+        !editing && !isDetailPage && styles.profileSafeArea,
+      ]}
+      edges={isDetailPage ? [] : ["top"]}
     >
       <ScreenTutorial
         accountId={accountId}
@@ -239,6 +342,10 @@ export default function ProfileScreen({
                         await onLogout();
                       });
                     } else {
+                      if (item.title === "Rate Us 5 Star") {
+                        setSelectedRating(0);
+                        setRatingSubmitted(false);
+                      }
                       setActiveAction(item.title);
                     }
                   }}
@@ -262,13 +369,150 @@ export default function ProfileScreen({
               ))}
             </View>
             {activeAction ? (
-              <Text style={styles.actionNote}>
-                {activeAction} is a frontend preview action.
-              </Text>
+              !isDetailPage && (
+                <Text style={styles.actionNote}>
+                  {activeAction} is a frontend preview action.
+                </Text>
+              )
             ) : null}
           </>
         )}
       </ScrollView>
+      {isDetailPage ? (
+        <Animated.View
+          style={[
+            styles.detailPage,
+            {
+              opacity: detailOpacity,
+              transform: [{ translateX: detailTransition }],
+            },
+          ]}
+        >
+          <SafeAreaView style={styles.detailSafeArea} edges={["top"]}>
+            <View style={styles.detailHeader}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Back to profile"
+                onPress={closeDetailPage}
+                style={styles.detailBackButton}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={21}
+                  color={theme.tertiary[900]}
+                />
+              </TouchableOpacity>
+              <Text style={styles.detailHeaderTitle}>{activeAction}</Text>
+              <View style={styles.detailHeaderSpacer} />
+            </View>
+            <ScrollView
+              contentContainerStyle={styles.detailContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.detailHero}>
+                <View style={styles.detailHeroIcon}>
+                  <Ionicons
+                    name={
+                      activeAction === "Rate Us 5 Star"
+                        ? "star"
+                        : menuItems.find((item) => item.title === activeAction)
+                            ?.icon
+                    }
+                    size={25}
+                    color={theme.white}
+                  />
+                </View>
+                <Text style={styles.detailHeroTitle}>
+                  {activeAction === "Rate Us 5 Star"
+                    ? "Enjoying Vantage Habits?"
+                    : activeAction === "About Us"
+                      ? "Build habits that stick"
+                      : activeAction === "Contact Us"
+                        ? "Get in touch"
+                        : activeAction === "Terms of Use"
+                          ? "Using Vantage Habits"
+                          : "Your data, your device"}
+                </Text>
+                <Text style={styles.detailHeroText}>
+                  {activeAction === "Rate Us 5 Star"
+                    ? "Choose a rating to let us know how the app is working for you."
+                    : activeAction === "Data Privacy"
+                      ? "A clear overview of the information this app uses."
+                      : "Learn more about Vantage Habits and how to use it."}
+                </Text>
+              </View>
+              {activeAction === "Rate Us 5 Star" ? (
+                <View style={styles.ratingCard}>
+                  <Text style={styles.detailSectionTitle}>Your rating</Text>
+                  <View style={styles.ratingStars}>
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <TouchableOpacity
+                        key={rating}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${rating} star${rating === 1 ? "" : "s"}`}
+                        accessibilityState={
+                          selectedRating === rating ? { selected: true } : {}
+                        }
+                        onPress={() => setSelectedRating(rating)}
+                        style={styles.ratingStarButton}
+                      >
+                        <Ionicons
+                          name={
+                            rating <= selectedRating ? "star" : "star-outline"
+                          }
+                          size={34}
+                          color={
+                            rating <= selectedRating
+                              ? theme.secondary[600]
+                              : theme.natural[300]
+                          }
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <Text style={styles.ratingFeedback}>
+                    {ratingSubmitted
+                      ? "Thanks for letting us know!"
+                      : selectedRating
+                        ? `${selectedRating} out of 5 stars`
+                        : "Tap a star to rate your experience"}
+                  </Text>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: selectedRating === 0 || ratingSubmitted,
+                    }}
+                    disabled={selectedRating === 0 || ratingSubmitted}
+                    onPress={() => setRatingSubmitted(true)}
+                    style={[
+                      styles.ratingSubmitButton,
+                      (selectedRating === 0 || ratingSubmitted) &&
+                        styles.ratingSubmitDisabled,
+                    ]}
+                  >
+                    <Text style={styles.ratingSubmitText}>
+                      {ratingSubmitted ? "Thanks for rating" : "Submit rating"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.detailSectionList}>
+                  {detailPages[activeAction].map((section) => (
+                    <View key={section.heading} style={styles.detailSection}>
+                      <Text style={styles.detailSectionTitle}>
+                        {section.heading}
+                      </Text>
+                      <Text style={styles.detailSectionText}>
+                        {section.body}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+          </SafeAreaView>
+        </Animated.View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -422,6 +666,125 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 12,
     textAlign: "center",
+  },
+  detailPage: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: theme.natural[50],
+  },
+  detailSafeArea: { flex: 1 },
+  detailHeader: {
+    minHeight: 58,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 17,
+    backgroundColor: theme.white,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.natural[100],
+  },
+  detailBackButton: {
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 19,
+    backgroundColor: theme.tertiary[50],
+  },
+  detailHeaderTitle: {
+    flex: 1,
+    color: theme.tertiary[900],
+    fontSize: 14,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  detailHeaderSpacer: { width: 38 },
+  detailContent: {
+    paddingHorizontal: 17,
+    paddingTop: 19,
+    paddingBottom: 126,
+  },
+  detailHero: {
+    alignItems: "center",
+    paddingHorizontal: 22,
+    paddingVertical: 24,
+    marginBottom: 16,
+    backgroundColor: theme.primary[600],
+    borderRadius: 20,
+  },
+  detailHeroIcon: {
+    width: 52,
+    height: 52,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    borderRadius: 26,
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  detailHeroTitle: {
+    color: theme.white,
+    fontSize: 18,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  detailHeroText: {
+    color: "rgba(255,255,255,0.92)",
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: "center",
+    marginTop: 7,
+  },
+  detailSectionList: { gap: 10 },
+  detailSection: {
+    padding: 16,
+    backgroundColor: theme.white,
+    borderRadius: 14,
+  },
+  detailSectionTitle: {
+    color: theme.tertiary[900],
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  detailSectionText: {
+    color: theme.natural[500],
+    fontSize: 12,
+    lineHeight: 19,
+    marginTop: 7,
+  },
+  ratingCard: {
+    alignItems: "center",
+    padding: 18,
+    backgroundColor: theme.white,
+    borderRadius: 14,
+  },
+  ratingStars: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  ratingStarButton: { paddingHorizontal: 5, paddingVertical: 7 },
+  ratingFeedback: {
+    color: theme.natural[500],
+    fontSize: 12,
+    marginTop: 5,
+  },
+  ratingSubmitButton: {
+    minHeight: 46,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 18,
+    borderRadius: 23,
+    backgroundColor: theme.tertiary[900],
+  },
+  ratingSubmitDisabled: { opacity: 0.45 },
+  ratingSubmitText: {
+    color: theme.white,
+    fontSize: 12,
+    fontWeight: "700",
   },
   editHeading: {
     minHeight: 58,

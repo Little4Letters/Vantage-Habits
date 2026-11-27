@@ -23,6 +23,7 @@ export default function HabitCard({
           : { backgroundColor: color || "#4388F5" },
       ]}
     >
+      {/* Habit icon and details */}
       <View style={styles.leftContent}>
         <View
           style={[
@@ -30,6 +31,7 @@ export default function HabitCard({
             isCompleted && styles.iconPlaceholderCompleted,
           ]}
         >
+          {/* Habit glyph */}
           <HabitGlyph
             icon={icon || "sparkles-outline"}
             iconType={iconType}
@@ -48,6 +50,8 @@ export default function HabitCard({
           </Text>
         </View>
       </View>
+
+      {/* Checkbox for marking habit as completed */}
       <TouchableOpacity
         accessibilityRole="checkbox"
         accessibilityLabel={`${isCompleted ? "Mark" : "Complete"} ${title}`}

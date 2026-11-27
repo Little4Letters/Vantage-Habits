@@ -79,6 +79,7 @@ export default function ScreenTutorial({ accountId, screenKey, steps }) {
       animationType="fade"
       onRequestClose={finishTutorial}
     >
+      {/* This section contains the tutorial content */}
       <View style={styles.backdrop}>
         <Animated.View style={[styles.card, { opacity: fade }]}>
           <Text style={styles.eyebrow}>

@@ -3,6 +3,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppText as Text } from "./Typography.js";
 import { palette as theme } from "../theme.js";
 
+// ReminderRow component displays a single row in the reminder settings screen, including
+// an icon, title, detail text, and a switch to toggle the reminder on or off.
+
+// It uses Ionicons for the icon and applies styles for layout and appearance.
 export default function ReminderRow({ icon, title, detail, value, onChange }) {
   return (
     <View style={styles.reminderRow}>

@@ -130,8 +130,7 @@ export default function HomeScreen({
               {firstName ? (
                 <>
                   {", "}
-                  <Text style={styles.greetingHighlight}>{firstName}</Text>
-                  !
+                  <Text style={styles.greetingHighlight}>{firstName}</Text>!
                 </>
               ) : (
                 "!"

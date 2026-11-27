@@ -29,7 +29,6 @@ import HomeScreen from "./src/screens/HomeScreen.jsx";
 import AddHabitScrn from "./src/screens/AddHabitScrn.jsx";
 import ProgressScreen from "./src/screens/ProgressScrn.jsx";
 import AlertsScreen from "./src/screens/NotificationScrn.jsx";
-// eslint-disable-next-line import/namespace, import/no-named-as-default, import/no-named-as-default-member
 import ProfileScreen from "./src/screens/ProfileScrn.jsx";
 import LoginScreen from "./src/screens/LoginScreen.tsx";
 import OnboardingScreen from "./src/screens/OnboardingScreen.tsx";
@@ -152,15 +151,18 @@ function LogoutTransition({ onComplete }) {
         ]}
       >
         <Animated.View
-          style={[
-            styles.logoutIcon,
-            { transform: [{ scale: iconScale }] },
-          ]}
+          style={[styles.logoutIcon, { transform: [{ scale: iconScale }] }]}
         >
-          <Ionicons name="checkmark-done" size={34} color={theme.primary[600]} />
+          <Ionicons
+            name="checkmark-done"
+            size={34}
+            color={theme.primary[600]}
+          />
         </Animated.View>
         <Text style={styles.logoutEyebrow}>UNTIL NEXT TIME</Text>
-        <Text style={styles.logoutTitle}>Thanks for showing up for yourself.</Text>
+        <Text style={styles.logoutTitle}>
+          Thanks for showing up for yourself.
+        </Text>
         <Text style={styles.logoutMessage}>
           Every small step counts. Your habits and progress will be here when
           you’re ready to continue.
