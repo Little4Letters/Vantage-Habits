@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Switch,
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AppText as Text } from "../components/Typography.js";
@@ -40,11 +42,62 @@ const notifications = [
 ];
 
 export default function AlertsScreen({ navigation, accountId }) {
-  const [morningReminder, setMorningReminder] = useState(true);
-  const [eveningReminder, setEveningReminder] = useState(false);
-  const [streakNotice, setStreakNotice] = useState(true);
+  const [reminderSettings, setReminderSettings] = useState({
+    morningReminder: true,
+    eveningReminder: false,
+    streakNotice: true,
+  });
+  const [remindersLoaded, setRemindersLoaded] = useState(false);
   const [readIds, setReadIds] = useState([]);
   const [verified, setVerified] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadReminders = async () => {
+      try {
+        const storedSettings = await AsyncStorage.getItem(
+          `@vantage-habits/reminders:${accountId}`,
+        );
+        if (storedSettings && isMounted) {
+          setReminderSettings((current) => ({
+            ...current,
+            ...JSON.parse(storedSettings),
+          }));
+        }
+      } catch (error) {
+        console.warn("Could not load reminder settings:", error);
+        Alert.alert(
+          "Couldn't load reminders",
+          "Your saved reminder settings could not be loaded.",
+        );
+      } finally {
+        if (isMounted) setRemindersLoaded(true);
+      }
+    };
+
+    loadReminders();
+    return () => {
+      isMounted = false;
+    };
+  }, [accountId]);
+
+  const updateReminder = async (setting, value, label) => {
+    const nextSettings = { ...reminderSettings, [setting]: value };
+    try {
+      await AsyncStorage.setItem(
+        `@vantage-habits/reminders:${accountId}`,
+        JSON.stringify(nextSettings),
+      );
+      setReminderSettings(nextSettings);
+      Alert.alert("Reminder saved", `${label} ${value ? "enabled" : "disabled"}.`);
+    } catch (error) {
+      Alert.alert(
+        "Couldn't save reminder",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    }
+  };
 
   const markRead = (id) => {
     setReadIds((current) =>
@@ -109,8 +162,11 @@ export default function AlertsScreen({ navigation, accountId }) {
               </Text>
             </View>
             <Switch
-              value={morningReminder}
-              onValueChange={setMorningReminder}
+              value={reminderSettings.morningReminder}
+              disabled={!remindersLoaded}
+              onValueChange={(value) =>
+                updateReminder("morningReminder", value, "Morning reminder")
+              }
             />
           </View>
           <View style={styles.reminderRow}>
@@ -121,8 +177,11 @@ export default function AlertsScreen({ navigation, accountId }) {
               </Text>
             </View>
             <Switch
-              value={eveningReminder}
-              onValueChange={setEveningReminder}
+              value={reminderSettings.eveningReminder}
+              disabled={!remindersLoaded}
+              onValueChange={(value) =>
+                updateReminder("eveningReminder", value, "Evening reminder")
+              }
             />
           </View>
           <View style={styles.reminderRow}>
@@ -132,7 +191,13 @@ export default function AlertsScreen({ navigation, accountId }) {
                 Get notified about your habit streaks
               </Text>
             </View>
-            <Switch value={streakNotice} onValueChange={setStreakNotice} />
+            <Switch
+              value={reminderSettings.streakNotice}
+              disabled={!remindersLoaded}
+              onValueChange={(value) =>
+                updateReminder("streakNotice", value, "Streak alerts")
+              }
+            />
           </View>
         </View>
 

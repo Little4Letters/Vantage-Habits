@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   loadStoredHabits,
   saveStoredHabits,
@@ -55,11 +55,12 @@ export function getDateKey(date = new Date()) {
 // It also handles loading errors and provides a retry mechanism.
 export function useHabits(accountId) {
   const [habits, setHabits] = useState([]);
-  const [habitsLoaded, setHabitsLoaded] = useState(false);
   const [isLoadingHabits, setIsLoadingHabits] = useState(true);
   const [habitsLoadError, setHabitsLoadError] = useState(null);
   const [habitsLoadAttempt, setHabitsLoadAttempt] = useState(0);
   const [completionHistory, setCompletionHistory] = useState([]);
+  const stateRef = useRef({ habits: [], completionHistory: [] });
+  const saveQueue = useRef(Promise.resolve());
 
   // useEffect loads saved habits once, or again when Retry is pressed.
   useEffect(() => {
@@ -101,8 +102,14 @@ export function useHabits(accountId) {
               entry,
             ]),
           );
-          setCompletionHistory(Array.from(historyById.values()));
+          const nextState = {
+            habits: normalizedHabits,
+            completionHistory: Array.from(historyById.values()),
+          };
+          stateRef.current = nextState;
+          setCompletionHistory(nextState.completionHistory);
         } else if (isMounted) {
+          stateRef.current = { habits: [], completionHistory: loadedHistory };
           setHabits([]);
           setCompletionHistory(loadedHistory);
         }
@@ -116,7 +123,6 @@ export function useHabits(accountId) {
       } finally {
         if (isMounted) {
           setIsLoadingHabits(false);
-          setHabitsLoaded(true);
         }
       }
     };
@@ -127,92 +133,95 @@ export function useHabits(accountId) {
     };
   }, [accountId, habitsLoadAttempt]);
 
-  // This effect saves every create, update, delete, or completion change.
-  useEffect(() => {
-    if (!habitsLoaded) return;
-
-    const saveHabits = async () => {
-      try {
+  const commitState = useCallback(
+    (update) => {
+      const operation = saveQueue.current.then(async () => {
+        const nextState = update(stateRef.current);
         await Promise.all([
-          saveStoredHabits(habits, accountId),
-          saveStoredCompletionHistory(completionHistory, accountId),
+          saveStoredHabits(nextState.habits, accountId),
+          saveStoredCompletionHistory(nextState.completionHistory, accountId),
         ]);
-      } catch (error) {
-        console.warn("Could not save habits:", error);
-      }
-    };
-
-    saveHabits();
-  }, [accountId, habits, completionHistory, habitsLoaded]);
+        stateRef.current = nextState;
+        setHabits(nextState.habits);
+        setCompletionHistory(nextState.completionHistory);
+      });
+      saveQueue.current = operation.catch(() => {});
+      return operation;
+    },
+    [accountId],
+  );
 
   // The `toggleHabit` function toggles the completion status of a habit for a specific date (defaulting to today).
   // It updates the habit's completedDates array and the completion history accordingly.
 
-  const toggleHabit = (habitId, date = getDateKey()) => {
-    setHabits((current) =>
-      current.map((habit) =>
-        habit.id !== habitId
-          ? habit
-          : (() => {
-              const completedDates = habit.completedDates || [];
-              const isCompleted = completedDates.includes(date);
-              const nextDates = isCompleted
-                ? completedDates.filter(
-                    (completedDate) => completedDate !== date,
-                  )
-                : [...completedDates, date];
+  const toggleHabit = (habitId, date = getDateKey()) =>
+    commitState((current) => {
+      const habit = current.habits.find((item) => item.id === habitId);
+      if (!habit) return current;
 
-              // Update the completion history state based on the toggled habit's completion status for the specified date.
+      const completedDates = habit.completedDates || [];
+      const isCompleted = completedDates.includes(date);
+      const nextDates = isCompleted
+        ? completedDates.filter((completedDate) => completedDate !== date)
+        : [...completedDates, date];
+      const entryId = `${habitId}:${date}`;
+      const nextHistory = isCompleted
+        ? current.completionHistory.filter((entry) => entry.id !== entryId)
+        : [
+            ...current.completionHistory.filter(
+              (entry) => entry.id !== entryId,
+            ),
+            {
+              id: entryId,
+              habitId,
+              date,
+              completedAt: new Date().toISOString(),
+            },
+          ];
 
-              setCompletionHistory((history) => {
-                const entryId = `${habitId}:${date}`;
-                return isCompleted
-                  ? history.filter((entry) => entry.id !== entryId)
-                  : [
-                      ...history.filter((entry) => entry.id !== entryId),
-                      {
-                        id: entryId,
-                        habitId,
-                        date,
-                        completedAt: new Date().toISOString(),
-                      },
-                    ];
-              });
-
-              return {
-                ...habit,
+      return {
+        habits: current.habits.map((item) =>
+          item.id === habitId
+            ? {
+                ...item,
                 completedDates: nextDates,
                 completed:
-                  date === getDateKey() ? !isCompleted : habit.completed,
-              };
-            })(),
-      ),
-    );
-  };
+                  date === getDateKey() ? !isCompleted : item.completed,
+              }
+            : item,
+        ),
+        completionHistory: nextHistory,
+      };
+    });
 
   const addHabit = (habit) =>
-    setHabits((current) => [
+    commitState((current) => ({
       ...current,
-      {
-        ...habit,
-        completed: false,
-        completedDates: habit.completedDates || [],
-      },
-    ]);
+      habits: [
+        ...current.habits,
+        {
+          ...habit,
+          completed: false,
+          completedDates: habit.completedDates || [],
+        },
+      ],
+    }));
 
   const updateHabit = (updatedHabit) =>
-    setHabits((current) =>
-      current.map((habit) =>
+    commitState((current) => ({
+      ...current,
+      habits: current.habits.map((habit) =>
         habit.id === updatedHabit.id ? { ...habit, ...updatedHabit } : habit,
       ),
-    );
+    }));
 
-  const deleteHabit = (habitId) => {
-    setHabits((current) => current.filter((habit) => habit.id !== habitId));
-    setCompletionHistory((history) =>
-      history.filter((entry) => entry.habitId !== habitId),
-    );
-  };
+  const deleteHabit = (habitId) =>
+    commitState((current) => ({
+      habits: current.habits.filter((habit) => habit.id !== habitId),
+      completionHistory: current.completionHistory.filter(
+        (entry) => entry.habitId !== habitId,
+      ),
+    }));
 
   const retryLoading = () => {
     setHabitsLoadAttempt((attempt) => attempt + 1);

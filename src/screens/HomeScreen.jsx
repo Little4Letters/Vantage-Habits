@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   View,
   Image,
   StyleSheet,
@@ -12,6 +13,7 @@ import HabitSec from "../components/HabitsSec.js";
 import ScreenTutorial from "../components/ScreenTutorial.js";
 import { AppText as Text } from "../components/Typography.js";
 import { palette as theme } from "../theme.js";
+import { isHabitScheduledOn } from "../utils/habitSchedule.js";
 
 function getDateKey(date) {
   const year = date.getFullYear();
@@ -98,9 +100,31 @@ export default function HomeScreen({
     (habit.completedDates || []).includes(selectedDate) ||
     (selectedDate === today && habit.completed);
   const upcomingHabits = habits.filter(
-    (habit) => !isCompletedOnSelectedDate(habit),
+    (habit) =>
+      isHabitScheduledOn(habit, selectedDate) &&
+      !isCompletedOnSelectedDate(habit),
   );
-  const completedHabits = habits.filter(isCompletedOnSelectedDate);
+  const completedHabits = habits.filter(
+    (habit) =>
+      isHabitScheduledOn(habit, selectedDate) &&
+      isCompletedOnSelectedDate(habit),
+  );
+  const handleToggleHabit = async (habit) => {
+    try {
+      await onToggleHabit(habit.id, selectedDate);
+      Alert.alert(
+        "Progress saved",
+        `${habit.title} was ${
+          isCompletedOnSelectedDate(habit) ? "updated" : "marked complete"
+        } for this day.`,
+      );
+    } catch (error) {
+      Alert.alert(
+        "Couldn't save progress",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    }
+  };
   const firstName = String(profile?.name || accountName || "")
     .trim()
     .split(/\s+/)[0];
@@ -310,7 +334,11 @@ export default function HomeScreen({
               key={habit.id}
               {...habit}
               isCompleted={false}
-              onPress={() => onToggleHabit(habit.id, selectedDate)}
+              onPress={() => handleToggleHabit(habit)}
+              onViewProgress={() => navigation.navigate("Progress")}
+              onManage={() =>
+                navigation.navigate("Add", { habitId: habit.id })
+              }
             />
           ))
         ) : (
@@ -329,7 +357,11 @@ export default function HomeScreen({
             key={habit.id}
             {...habit}
             isCompleted
-            onPress={() => onToggleHabit(habit.id, selectedDate)}
+            onPress={() => handleToggleHabit(habit)}
+            onViewProgress={() => navigation.navigate("Progress")}
+            onManage={() =>
+              navigation.navigate("Add", { habitId: habit.id })
+            }
           />
         ))}
       </ScrollView>

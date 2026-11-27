@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Animated,
   Platform,
   ScrollView,
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   AppText as Text,
@@ -66,6 +68,31 @@ const detailPages = {
     },
   ],
 };
+
+function isValidBirthDate(dayText, monthText, yearText) {
+  if (
+    !/^\d{2}$/.test(dayText) ||
+    !/^\d{2}$/.test(monthText) ||
+    !/^\d{4}$/.test(yearText)
+  ) {
+    return false;
+  }
+
+  const day = Number(dayText);
+  const month = Number(monthText);
+  const year = Number(yearText);
+  const date = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return (
+    year >= 1900 &&
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day &&
+    date <= today
+  );
+}
 
 export default function ProfileScreen({
   profile,
@@ -132,6 +159,22 @@ export default function ProfileScreen({
     });
   };
 
+  const submitRating = async () => {
+    try {
+      await AsyncStorage.setItem(
+        `@vantage-habits/rating:${accountId}`,
+        JSON.stringify({ rating: selectedRating, ratedAt: new Date().toISOString() }),
+      );
+      setRatingSubmitted(true);
+      Alert.alert("Rating saved", "Thanks for sharing your feedback.");
+    } catch (error) {
+      Alert.alert(
+        "Couldn't save rating",
+        error instanceof Error ? error.message : "Please try again.",
+      );
+    }
+  };
+
   // The ProfileScreen component manages the user's profile information, allowing them to view and edit their account details.
   // It includes state variables for editing mode, name, email, gender, birth date, and active action. The component renders a profile banner, a list of menu items for various actions, and an editing form when in editing mode.
 
@@ -146,6 +189,7 @@ export default function ProfileScreen({
     { icon: "lock-closed-outline", title: "Change Password" },
     { icon: "log-out-outline", title: "Logout" },
   ];
+  const birthDateParts = birthDate.split(" / ");
 
   // What is return? This is the main rendering of the ProfileScreen component.
   // It returns a SafeAreaView that contains a ScrollView. Inside the ScrollView, it conditionally renders either the editing form or the profile view based on the editing state. The profile view includes a banner with user information and a list of menu items for various actions. The editing form allows users to update their name, email, gender, and birth date, with appropriate input fields and buttons for saving changes.
@@ -264,7 +308,7 @@ export default function ProfileScreen({
 
             <Text style={styles.fieldLabel}>What is your date of birth?</Text>
             <View style={styles.birthDateRow}>
-              {birthDate.split(" / ").map((part, index) => (
+              {birthDateParts.map((part, index) => (
                 <TextInput
                   key={index}
                   accessibilityLabel={
@@ -276,11 +320,18 @@ export default function ProfileScreen({
                       current
                         .split(" / ")
                         .map((datePart, partIndex) =>
-                          partIndex === index ? value : datePart,
+                          partIndex === index
+                            ? value.replace(/\D/g, "").slice(
+                                0,
+                                index === 2 ? 4 : 2,
+                              )
+                            : datePart,
                         )
                         .join(" / "),
                     )
                   }
+                  keyboardType="number-pad"
+                  maxLength={index === 2 ? 4 : 2}
                   style={[styles.profileInput, styles.birthDateInput]}
                 />
               ))}
@@ -289,8 +340,32 @@ export default function ProfileScreen({
             <TouchableOpacity
               accessibilityRole="button"
               onPress={async () => {
-                await onUpdateProfile({ name, email, gender, birthDate });
-                setEditing(false);
+                const [day, month, year] = birthDateParts;
+                if (!isValidBirthDate(day, month, year)) {
+                  Alert.alert(
+                    "Invalid date of birth",
+                    "Enter a real date in DD / MM / YYYY format that is not in the future.",
+                  );
+                  return;
+                }
+
+                const normalizedBirthDate = `${day.padStart(2, "0")} / ${month.padStart(2, "0")} / ${year}`;
+                try {
+                  await onUpdateProfile({
+                    name,
+                    email,
+                    gender,
+                    birthDate: normalizedBirthDate,
+                  });
+                  setBirthDate(normalizedBirthDate);
+                  Alert.alert("Profile saved", "Your account details were updated.");
+                  setEditing(false);
+                } catch (error) {
+                  Alert.alert(
+                    "Couldn't save profile",
+                    error instanceof Error ? error.message : "Please try again.",
+                  );
+                }
               }}
               style={styles.updateButton}
             >
@@ -483,7 +558,7 @@ export default function ProfileScreen({
                       disabled: selectedRating === 0 || ratingSubmitted,
                     }}
                     disabled={selectedRating === 0 || ratingSubmitted}
-                    onPress={() => setRatingSubmitted(true)}
+                    onPress={submitRating}
                     style={[
                       styles.ratingSubmitButton,
                       (selectedRating === 0 || ratingSubmitted) &&

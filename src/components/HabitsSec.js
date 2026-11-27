@@ -12,6 +12,8 @@ export default function HabitCard({
   iconType,
   isCompleted,
   onPress,
+  onViewProgress,
+  onManage,
 }) {
   // Manages the rendering of a habit card, which displays the habit's title, frequency, and an icon or emoji. It also includes a checkbox to mark the habit as completed or not. The component accepts props for customization, including title, frequency, color, icon, iconType, isCompleted status, and an onPress handler for the checkbox.
   return (
@@ -51,16 +53,52 @@ export default function HabitCard({
         </View>
       </View>
 
-      {/* Checkbox for marking habit as completed */}
-      <TouchableOpacity
-        accessibilityRole="checkbox"
-        accessibilityLabel={`${isCompleted ? "Mark" : "Complete"} ${title}`}
-        accessibilityState={{ checked: isCompleted }}
-        onPress={onPress}
-        style={[styles.checkCircle, isCompleted && styles.checkCircleCompleted]}
-      >
-        {isCompleted && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
-      </TouchableOpacity>
+      <View style={styles.actions}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={`View ${title} progress`}
+          onPress={onViewProgress}
+          style={[
+            styles.actionButton,
+            isCompleted && styles.actionButtonCompleted,
+          ]}
+        >
+          <Ionicons
+            name="stats-chart-outline"
+            size={16}
+            color={isCompleted ? theme.tertiary[700] : "#FFFFFF"}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={`Manage ${title}`}
+          onPress={onManage}
+          style={[
+            styles.actionButton,
+            isCompleted && styles.actionButtonCompleted,
+          ]}
+        >
+          <Ionicons
+            name="create-outline"
+            size={16}
+            color={isCompleted ? theme.tertiary[700] : "#FFFFFF"}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="checkbox"
+          accessibilityLabel={`${isCompleted ? "Mark" : "Complete"} ${title}`}
+          accessibilityState={{ checked: isCompleted }}
+          onPress={onPress}
+          style={[
+            styles.checkCircle,
+            isCompleted && styles.checkCircleCompleted,
+          ]}
+        >
+          {isCompleted && (
+            <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -109,13 +147,24 @@ const styles = StyleSheet.create({
 
   frequencyCompleted: { color: theme.natural[500] },
 
+  actions: { flexDirection: "row", alignItems: "center", gap: 5, marginLeft: 6 },
+  actionButton: {
+    width: 30,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  actionButtonCompleted: { backgroundColor: theme.tertiary[50] },
   checkCircle: {
     width: 24,
     height: 24,
     borderRadius: 14,
     borderWidth: 2,
     borderColor: "rgba(255,255,255,0.5)",
-    marginLeft: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   checkCircleCompleted: {

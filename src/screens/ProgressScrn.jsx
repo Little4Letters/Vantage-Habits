@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Animated,
   TouchableOpacity,
   ScrollView,
@@ -13,6 +14,7 @@ import { AppText as Text } from "../components/Typography.js";
 import HabitGlyph from "../components/HabitGlyph.js";
 import ScreenTutorial from "../components/ScreenTutorial.js";
 import { palette as theme } from "../theme.js";
+import { isHabitScheduledOn } from "../utils/habitSchedule.js";
 
 const periods = ["Today", "This Week", "This Month"];
 
@@ -77,11 +79,19 @@ export default function ProgressScreen({ habits, onToggleHabit, accountId }) {
   const today = new Date();
   const todayKey = getDateKey(today);
   const periodDateKeys = getPeriodDateKeys(period, today);
-  const totalChecks = habits.length * periodDateKeys.length;
+  const totalChecks = habits.reduce(
+    (total, habit) =>
+      total +
+      periodDateKeys.filter((dateKey) =>
+        isHabitScheduledOn(habit, dateKey),
+      ).length,
+    0,
+  );
   const completedChecks = habits.reduce(
     (total, habit) =>
       total +
       periodDateKeys.filter((dateKey) =>
+        isHabitScheduledOn(habit, dateKey) &&
         isHabitCompletedOn(habit, dateKey, todayKey),
       ).length,
     0,
@@ -241,11 +251,16 @@ export default function ProgressScreen({ habits, onToggleHabit, accountId }) {
 
         <Text style={styles.sectionTitle}>Habits progress</Text>
         {habits.map((habit) => {
-          const habitCompleted = periodDateKeys.filter((dateKey) =>
+          const habitScheduledDates = periodDateKeys.filter((dateKey) =>
+            isHabitScheduledOn(habit, dateKey),
+          );
+          const habitCompleted = habitScheduledDates.filter((dateKey) =>
             isHabitCompletedOn(habit, dateKey, todayKey),
           ).length;
-          const habitProgress = periodDateKeys.length
-            ? Math.round((habitCompleted / periodDateKeys.length) * 100)
+          const habitProgress = habitScheduledDates.length
+            ? Math.round(
+                (habitCompleted / habitScheduledDates.length) * 100,
+              )
             : 0;
 
           return (
@@ -271,7 +286,7 @@ export default function ProgressScreen({ habits, onToggleHabit, accountId }) {
                 </Text>
 
                 <Text style={styles.streakPill}>
-                  {habitCompleted} / {periodDateKeys.length}
+                  {habitCompleted} / {habitScheduledDates.length}
                 </Text>
               </View>
 
@@ -284,15 +299,40 @@ export default function ProgressScreen({ habits, onToggleHabit, accountId }) {
               <View style={styles.weekRow}>
                 {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => {
                   const dateKey = weekDates[index];
+                  const scheduled = isHabitScheduledOn(habit, dateKey);
                   const marked = isHabitCompletedOn(habit, dateKey, todayKey);
                   return (
                     <TouchableOpacity
                       key={`${day}-${index}`}
                       accessibilityRole="checkbox"
                       accessibilityLabel={`${habit.title}, ${day}, ${dateKey}`}
-                      accessibilityState={{ checked: marked }}
-                      onPress={() => onToggleHabit(habit.id, dateKey)}
-                      style={styles.dayStatus}
+                      accessibilityState={{
+                        checked: marked,
+                        disabled: !scheduled,
+                      }}
+                      disabled={!scheduled}
+                      onPress={async () => {
+                        try {
+                          await onToggleHabit(habit.id, dateKey);
+                          Alert.alert(
+                            "Progress saved",
+                            `${habit.title} was ${
+                              marked ? "unmarked" : "marked complete"
+                            } for ${day}.`,
+                          );
+                        } catch (error) {
+                          Alert.alert(
+                            "Couldn't save progress",
+                            error instanceof Error
+                              ? error.message
+                              : "Please try again.",
+                          );
+                        }
+                      }}
+                      style={[
+                        styles.dayStatus,
+                        !scheduled && styles.dayStatusDisabled,
+                      ]}
                       hitSlop={5}
                     >
                       <View
@@ -462,6 +502,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 4,
   },
+  dayStatusDisabled: { opacity: 0.35 },
   dayMark: {
     width: 18,
     height: 18,

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
@@ -72,9 +73,9 @@ const emojiChoices = [
   "📷",
   "🎨",
 ];
-const frequencies = ["One Time", "Daily", "Monthly"];
+const frequencies = ["One Time", "Daily", "Weekly", "Monthly"];
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const durations = ["1 Month", "2 Months", "3 Months"];
+const durations = ["1 Week", "1 Month", "2 Months", "3 Months"];
 const times = [
   { label: "Anytime", icon: "time-outline" },
   { label: "Morning", icon: "sunny-outline" },
@@ -148,8 +149,35 @@ const presets = [
   },
 ];
 
+function getDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getEndDate(startDate, duration) {
+  const [year, month, day] = startDate.split("-").map(Number);
+  const durationCount = Number.parseInt(duration, 10);
+  if (duration.includes("Week")) {
+    const endDate = new Date(year, month - 1, day + durationCount * 7 - 1);
+    return getDateKey(endDate);
+  }
+
+  const monthOffset = durationCount;
+  const targetMonth = month - 1 + monthOffset;
+  const targetYear = year + Math.floor(targetMonth / 12);
+  const targetMonthIndex = targetMonth % 12;
+  const endDay = Math.min(
+    day,
+    new Date(targetYear, targetMonthIndex + 1, 0).getDate(),
+  );
+  return `${targetYear}-${String(targetMonthIndex + 1).padStart(2, "0")}-${String(endDay).padStart(2, "0")}`;
+}
+
 export default function AddHabitScrn({
   navigation,
+  route,
   habits,
   onAddHabit,
   onUpdateHabit,
@@ -193,7 +221,7 @@ export default function AddHabitScrn({
     setError("");
   };
 
-  const editHabit = (habit) => {
+  const editHabit = useCallback((habit) => {
     setTitle(habit.title);
     setFrequency(habit.repeat || "Daily");
     setColor(habit.color || colors[0]);
@@ -205,15 +233,36 @@ export default function AddHabitScrn({
     setEditingId(habit.id);
     setError("");
     setMode("create");
-  };
+  }, []);
 
-  const saveHabit = () => {
+  useEffect(() => {
+    const habitId = route?.params?.habitId;
+    if (!habitId) return;
+
+    const timeout = setTimeout(() => {
+      const habitToEdit = habits.find((habit) => habit.id === habitId);
+      if (habitToEdit) editHabit(habitToEdit);
+      navigation.setParams({ habitId: undefined });
+    }, 0);
+
+    return () => clearTimeout(timeout);
+  }, [editHabit, habits, navigation, route?.params?.habitId]);
+
+  const saveHabit = async () => {
     const cleanTitle = title.trim();
     if (!cleanTitle) {
       setError("Enter a habit name or choose one above.");
       return;
     }
+    if (frequency === "Weekly" && selectedDays.length === 0) {
+      setError("Choose at least one day for a weekly habit.");
+      return;
+    }
 
+    const existingHabit = habits.find(
+      (existingHabit) => existingHabit.id === editingId,
+    );
+    const createdAt = existingHabit?.createdAt || getDateKey(new Date());
     const habit = {
       id: editingId || `${Date.now()}`,
       title: cleanTitle,
@@ -230,18 +279,58 @@ export default function AddHabitScrn({
       time,
       days: selectedDays,
       duration,
+      createdAt,
+      endsOn: getEndDate(createdAt, duration),
       completed: false,
     };
 
-    if (editingId) {
-      onUpdateHabit(habit);
-      resetForm();
-      setMode("manage");
-    } else {
-      onAddHabit(habit);
-      resetForm();
-      navigation.navigate("Home");
+    try {
+      if (editingId) {
+        await onUpdateHabit(habit);
+        Alert.alert("Habit updated", `${cleanTitle} was saved.`);
+        resetForm();
+        setMode("manage");
+      } else {
+        await onAddHabit(habit);
+        Alert.alert("Habit created", `${cleanTitle} was saved.`);
+        resetForm();
+        navigation.navigate("Home");
+      }
+    } catch (saveError) {
+      Alert.alert(
+        "Couldn't save habit",
+        saveError instanceof Error
+          ? saveError.message
+          : "Please try again.",
+      );
     }
+  };
+
+  const confirmDeleteHabit = (habit) => {
+    Alert.alert(
+      "Delete habit?",
+      `Delete "${habit.title}" and its progress history?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await onDeleteHabit(habit.id);
+              Alert.alert("Habit deleted", `${habit.title} was removed.`);
+            } catch (deleteError) {
+              Alert.alert(
+                "Couldn't delete habit",
+                deleteError instanceof Error
+                  ? deleteError.message
+                  : "Please try again.",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const toggleDay = (day) => {
@@ -611,7 +700,7 @@ export default function AddHabitScrn({
                     <TouchableOpacity
                       accessibilityRole="button"
                       accessibilityLabel={`Delete ${habit.title}`}
-                      onPress={() => onDeleteHabit(habit.id)}
+                      onPress={() => confirmDeleteHabit(habit)}
                       style={styles.deleteButton}
                     >
                       <Ionicons
