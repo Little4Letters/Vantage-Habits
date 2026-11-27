@@ -63,7 +63,11 @@ export default function OnboardingScreen({
   const [activeHabit, setActiveHabit] = useState(0);
 
   return (
+
+    // SafeAreaView para diri matabunan san phone status bar an UI
     <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+
+      
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
