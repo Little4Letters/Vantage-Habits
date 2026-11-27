@@ -59,7 +59,7 @@ export default function OnboardingScreen({
   // Ini nga useState nagtatago san current width san image carousel.
   const [carouselWidth, setCarouselWidth] = useState(0);
 
-  
+  // Ini nga useState nagtatago san index san active nga habit image.
   const [activeHabit, setActiveHabit] = useState(0);
 
   return (
