@@ -160,6 +160,8 @@ export default function OnboardingScreen({
                     <View
                       style={[
                         styles.paginationDot,
+
+                         // Kon active an image, mas halaba ngan mas klaro an dot.
                         activeHabit === index && styles.paginationDotActive,
                       ]}
                     />
@@ -169,6 +171,7 @@ export default function OnboardingScreen({
             </View>
           </View>
 
+          //Section para san title nagan desciption san appliacation.
           <View style={styles.textSection}>
             <Text style={styles.title}>Stay Tuned, Stay Healthy</Text>
             <Text style={styles.subtitle}>
@@ -177,7 +180,10 @@ export default function OnboardingScreen({
             </Text>
           </View>
 
+          //ine sa section para san Login ngan Create Account buttons
           <View style={styles.actions}>
+
+            //Login button: pagtapo sini, tatawagon an onLogin function
             <TouchableOpacity
               accessibilityRole="button"
               onPress={onLogin}
@@ -185,6 +191,8 @@ export default function OnboardingScreen({
             >
               <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
+
+            //Create Account button: pagtapo hini, tatawogon an onCreateAccount function.
             <TouchableOpacity
               accessibilityRole="button"
               onPress={onCreateAccount}
@@ -199,6 +207,7 @@ export default function OnboardingScreen({
   );
 }
 
+sytlesheet na nani ine
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: theme.white },
   scrollContent: {
