@@ -10,6 +10,7 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { palette as theme } from "../theme.js";
 
+// ine an mga habit na makikita mo sa screen mao an image carousel
 const habitShowcase = [
   {
     label: "#Reading",
