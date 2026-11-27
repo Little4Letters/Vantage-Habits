@@ -130,6 +130,8 @@ export default function OnboardingScreen({
                       { width: carouselWidth || "100%" },
                     ]}
                   >
+
+                    //asya ine an actual image san kada habit
                     <Image
                       accessibilityLabel={habit.description}
                       source={{ uri: habit.image }}
