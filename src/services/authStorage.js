@@ -30,9 +30,7 @@ async function setAsyncStorageFallback() {
 async function getAccountStorage() {
   if (Platform.OS === "web") return AsyncStorage;
 
-  if (
-    (await AsyncStorage.getItem(ACCOUNT_STORAGE_FALLBACK_KEY)) === "1"
-  ) {
+  if ((await AsyncStorage.getItem(ACCOUNT_STORAGE_FALLBACK_KEY)) === "1") {
     return AsyncStorage;
   }
 
@@ -150,18 +148,28 @@ export async function createAccount({ name, email, password }) {
     .trim()
     .toLowerCase();
 
+  // Validate the input fields for name, email, and password to ensure they meet the required criteria before creating the account.
+
   if (!normalizedName) {
     throw new Error("Name is required.");
   }
+  // Check that the name is between 2 and 40 characters long to ensure it is a valid length for user identification.
+
   if (normalizedName.length < 2 || normalizedName.length > 40) {
     throw new Error("Name must be between 2 and 40 characters.");
   }
+  // Check that the name contains only valid characters (letters, spaces, apostrophes, periods, and hyphens) to prevent invalid or potentially harmful input.
+
   if (!/^\p{L}[\p{L}\p{M}' .-]*$/u.test(normalizedName)) {
     throw new Error("Name contains invalid characters.");
   }
+  // Validate the email format to ensure it is a valid email address before proceeding with account creation.
+
   if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
     throw new Error("Invalid email format.");
   }
+  // Check that the email is not longer than 254 characters to ensure it meets standard email length requirements.
+
   if (!password) {
     throw new Error("Password is required.");
   }
@@ -180,6 +188,7 @@ export async function createAccount({ name, email, password }) {
     );
   }
 
+  // Generate a random salt and hash the password with the salt for secure storage.
   const saltBytes = await Crypto.getRandomBytesAsync(16);
   const salt = bytesToHex(saltBytes);
   const passwordHash = await hashPassword(password, salt);
@@ -191,6 +200,7 @@ export async function createAccount({ name, email, password }) {
     passwordSalt: salt,
   };
 
+  // Store the new account in AsyncStorage and save the user profile and session information for future use.
   await setStoredAccounts([...existingAccounts, account]);
   await saveProfile(account.id, {
     name: account.name,
@@ -217,11 +227,13 @@ export async function loginAccount(email, password) {
     );
   }
 
+  // Find the account with the matching email and verify the password by hashing it with the stored salt and comparing it to the stored hash.
   const account = storedAccounts.find((item) => item.email === normalizedEmail);
   if (!account) {
     throw new Error("Incorrect email or password.");
   }
 
+  // Hash the provided password with the stored salt and compare it to the stored password hash to verify the user's credentials.
   const passwordHash = await hashPassword(password, account.passwordSalt);
   if (passwordHash !== account.passwordHash) {
     throw new Error("Incorrect email or password.");
@@ -231,6 +243,7 @@ export async function loginAccount(email, password) {
   return account;
 }
 
+// Retrieves the currently logged-in account based on the stored session ID.
 export async function getSessionAccount() {
   const sessionId = await AsyncStorage.getItem(SESSION_KEY);
   if (!sessionId) return null;

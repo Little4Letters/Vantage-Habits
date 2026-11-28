@@ -1,3 +1,10 @@
+// What are the updated components in the AddHabitScrn.jsx file?
+
+// The updated components in the `AddHabitScrn.jsx` file include:
+
+// 1. **Imports**: The file imports various React hooks, React Native components, and custom components such as `HabitPresetCard`, `HabitGlyph`, and `ScreenTutorial`.
+// It also imports the theme palette for styling.
+
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -299,9 +306,7 @@ export default function AddHabitScrn({
     } catch (saveError) {
       Alert.alert(
         "Couldn't save habit",
-        saveError instanceof Error
-          ? saveError.message
-          : "Please try again.",
+        saveError instanceof Error ? saveError.message : "Please try again.",
       );
     }
   };

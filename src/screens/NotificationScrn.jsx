@@ -10,7 +10,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AppText as Text } from "../components/Typography.js";//src, custom Text component nga ginagamit sa screen.
+import { AppText as Text } from "../components/Typography.js"; //src, custom Text component nga ginagamit sa screen.
 import { palette as theme } from "../theme.js"; //src, color palette nga ginagamit san design.
 import ScreenTutorial from "../components/ScreenTutorial.js"; //src, tutorial component nga nagpapakita guide sa user.
 
@@ -50,14 +50,14 @@ export default function AlertsScreen({ navigation, accountId }) {
     eveningReminder: false,
     streakNotice: true,
   });
-   // Checks if saved reminder settings have finished loading.
+  // Checks if saved reminder settings have finished loading.
   const [remindersLoaded, setRemindersLoaded] = useState(false);
   // nagtatago san IDs san mga notification nga nabasa na
-  const [readIds, setReadIds] = useState([]); 
-   // Checks if the email verification button was pressed
+  const [readIds, setReadIds] = useState([]);
+  // Checks if the email verification button was pressed
   const [verified, setVerified] = useState(false);
 
- // ASYNC STORAGE: Ginkukuha an saved reminder settings san current account.
+  // ASYNC STORAGE: Ginkukuha an saved reminder settings san current account.
   // Ini para ma-load utro an previous settings san user.
   useEffect(() => {
     let isMounted = true;
@@ -67,7 +67,7 @@ export default function AlertsScreen({ navigation, accountId }) {
         const storedSettings = await AsyncStorage.getItem(
           `@vantage-habits/reminders:${accountId}`,
         );
-         // Kon may saved settings, inbabalik san reminderSettings
+        // Kon may saved settings, inbabalik san reminderSettings
         if (storedSettings && isMounted) {
           setReminderSettings((current) => ({
             ...current,
@@ -93,7 +93,7 @@ export default function AlertsScreen({ navigation, accountId }) {
     };
   }, [accountId]);
 
-// function NA nagsa-save san bag-o nga reminder setting kon napindot an switch.
+  // function NA nagsa-save san bag-o nga reminder setting kon napindot an switch.
   const updateReminder = async (setting, value, label) => {
     const nextSettings = { ...reminderSettings, [setting]: value };
     try {
@@ -104,8 +104,12 @@ export default function AlertsScreen({ navigation, accountId }) {
       );
       setReminderSettings(nextSettings); // Gin-uupdate an reminder settings sa screen.
       // Nagpapakita confirmation kon successfully saved.
-      Alert.alert("Reminder saved", `${label} ${value ? "enabled" : "disabled"}.`);
-    } catch (error) { //kun d ma save
+      Alert.alert(
+        "Reminder saved",
+        `${label} ${value ? "enabled" : "disabled"}.`,
+      );
+    } catch (error) {
+      //kun d ma save
       Alert.alert(
         "Couldn't save reminder",
         error instanceof Error ? error.message : "Please try again.",
@@ -113,7 +117,7 @@ export default function AlertsScreen({ navigation, accountId }) {
     }
   };
 
-   // Ini nga function nagdadagdag san notification ID sa list san mga nabasa na.
+  // Ini nga function nagdadagdag san notification ID sa list san mga nabasa na.
   const markRead = (id) => {
     setReadIds((current) =>
       current.includes(id) ? current : [...current, id],
@@ -123,7 +127,7 @@ export default function AlertsScreen({ navigation, accountId }) {
   // PAGE UI
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-    {/* Src/components/ScreenTutorial.js */}
+      {/* Src/components/ScreenTutorial.js */}
       <ScreenTutorial
         accountId={accountId}
         screenKey="alerts"
@@ -149,11 +153,12 @@ export default function AlertsScreen({ navigation, accountId }) {
       <ScrollView
         contentContainerStyle={styles.screenContent}
         showsVerticalScrollIndicator={false}
-      > {/* PAGE HEADER */}
+      >
+        {" "}
+        {/* PAGE HEADER */}
         <Text style={styles.pageEyebrow}>STAY ON TRACK</Text>
         <Text style={styles.pageTitle}>Notifications</Text>
         <Text style={styles.pageSubtitle}>Notifications and Live Alerts</Text>
-
         {/* REMINDER INTRODUCTION CARD */}
         <View style={styles.alertHighlight}>
           <View style={styles.alertIcon}>
@@ -170,7 +175,6 @@ export default function AlertsScreen({ navigation, accountId }) {
             </Text>
           </View>
         </View>
-
         {/* DAILY REMINDERS SECTION */}
         <Text style={styles.sectionTitle}>DAILY REMINDERS</Text>
         <View style={styles.reminderList}>
@@ -206,7 +210,7 @@ export default function AlertsScreen({ navigation, accountId }) {
               }
             />
           </View>
-          {/* STREAK ALERT SWITCH */} 
+          {/* STREAK ALERT SWITCH */}
           <View style={styles.reminderRow}>
             <View style={styles.reminderCopy}>
               <Text style={styles.reminderTitle}>Streak alerts</Text>
@@ -223,11 +227,9 @@ export default function AlertsScreen({ navigation, accountId }) {
             />
           </View>
         </View>
-
         {/* Didi makikita an Workout, Ice Bath, ngan Daily Action. */}
         <Text style={styles.sectionTitle}>LIVE ALERTS</Text>
         <View style={styles.notificationList}>
-
           {/* Map para ipakita an ngatanan nga notification tikang sa notifications array. */}
           {notifications.map((item) => {
             const isRead = readIds.includes(item.id);
@@ -239,7 +241,9 @@ export default function AlertsScreen({ navigation, accountId }) {
                   { backgroundColor: item.color },
                   isRead && styles.notificationRead,
                 ]}
-              > {/* ALERT ICON */}
+              >
+                {" "}
+                {/* ALERT ICON */}
                 <View style={styles.notificationIcon}>
                   <Ionicons name={item.icon} size={22} color={item.color} />
                 </View>
@@ -250,7 +254,6 @@ export default function AlertsScreen({ navigation, accountId }) {
                     {item.detail}
                   </Text>
                 </View>
-
                 {/* ALERT ACTION BUTTON: Button para sa kada notification. */}
                 {/* Daily Action nag-o-open san Add screen. An iba nga alerts minamarkahan nga read. */}
                 {/* GO TO: App navigation setup para makita an "Add" screen route. */}
@@ -264,7 +267,7 @@ export default function AlertsScreen({ navigation, accountId }) {
                   }
                   style={styles.notificationAction}
                 >
-                  <Text style={styles.notificationActionText}> 
+                  <Text style={styles.notificationActionText}>
                     {isRead && item.action !== "Add+" ? "Done" : item.action}
                   </Text>
                 </TouchableOpacity>
@@ -272,7 +275,7 @@ export default function AlertsScreen({ navigation, accountId }) {
             );
           })}
         </View>
-        {/* OTHER NOTIFICATIONS SECTION */} 
+        {/* OTHER NOTIFICATIONS SECTION */}
         <Text style={styles.sectionTitle}>OTHER NOTIFICATIONS</Text>
         {/* EMAIL VERIFICATION CARD */}
         <TouchableOpacity
@@ -303,7 +306,6 @@ export default function AlertsScreen({ navigation, accountId }) {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: theme.white },

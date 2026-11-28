@@ -99,6 +99,9 @@ export default function HomeScreen({
   const isCompletedOnSelectedDate = (habit) =>
     (habit.completedDates || []).includes(selectedDate) ||
     (selectedDate === today && habit.completed);
+
+  // This function filters the habits to determine which ones are scheduled for the selected date and whether they are completed or not.
+  // It creates two separate arrays: one for upcoming habits that are scheduled but not completed, and another for completed habits that are scheduled and marked as completed.
   const upcomingHabits = habits.filter(
     (habit) =>
       isHabitScheduledOn(habit, selectedDate) &&
@@ -109,6 +112,9 @@ export default function HomeScreen({
       isHabitScheduledOn(habit, selectedDate) &&
       isCompletedOnSelectedDate(habit),
   );
+
+  // This function handles the toggling of a habit's completion status for the selected date.
+  // It calls the onToggleHabit function passed as a prop to update the habit's status and displays an alert to inform the user of the change.
   const handleToggleHabit = async (habit) => {
     try {
       await onToggleHabit(habit.id, selectedDate);
@@ -125,6 +131,8 @@ export default function HomeScreen({
       );
     }
   };
+
+  //
   const firstName = String(profile?.name || accountName || "")
     .trim()
     .split(/\s+/)[0];
@@ -336,9 +344,7 @@ export default function HomeScreen({
               isCompleted={false}
               onPress={() => handleToggleHabit(habit)}
               onViewProgress={() => navigation.navigate("Progress")}
-              onManage={() =>
-                navigation.navigate("Add", { habitId: habit.id })
-              }
+              onManage={() => navigation.navigate("Add", { habitId: habit.id })}
             />
           ))
         ) : (
@@ -359,9 +365,7 @@ export default function HomeScreen({
             isCompleted
             onPress={() => handleToggleHabit(habit)}
             onViewProgress={() => navigation.navigate("Progress")}
-            onManage={() =>
-              navigation.navigate("Add", { habitId: habit.id })
-            }
+            onManage={() => navigation.navigate("Add", { habitId: habit.id })}
           />
         ))}
       </ScrollView>
