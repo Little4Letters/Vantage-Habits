@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
     position: "relative",
     marginBottom: 10,
   },
+//Rounded image container
   mainCard: {
     width: "72%",
     maxWidth: 310,
@@ -268,6 +269,7 @@ const styles = StyleSheet.create({
     color: theme.tertiary[900],
     fontFamily: "NunitoSans_800ExtraBold",
     fontSize: 18,
+    //Small circles or an dots sa gilid
   },
   pagination: {
     position: "absolute",
