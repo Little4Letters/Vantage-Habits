@@ -293,6 +293,8 @@ const styles = StyleSheet.create({
     width: 16,
     backgroundColor: theme.white,
   },
+
+  // adi an side design na pink pati black nga nag aappear sa kilid san image carousel
   sideCard: {
     position: "absolute",
     top: "20%",
